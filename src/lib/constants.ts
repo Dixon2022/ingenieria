@@ -1,4 +1,5 @@
 
+
 export const APP_NAME = "AmorPOS";
 export const BAKERY_NAME = "Panadería Amores";
 
@@ -201,7 +202,7 @@ export const UI_TEXT = {
   EDIT_SALES_ORDER: "Editar Documento de Venta",
   CUSTOMER_NAME: "Nombre Cliente",
   PAYMENT_METHOD: "Método de Pago",
-  CASH_REGISTER_OPEN_REQUIRED: "Requiere caja abierta (recordatorio)",
+  CASH_REGISTER_OPEN_REQUIRED: "Requiere caja abierta (PDV)", // Updated
 
   INVENTORY_ADJUSTMENTS_TITLE: "Ajustes de Inventario",
   MANAGE_INVENTORY_ADJUSTMENTS_DESCRIPTION: "Registre ajustes manuales al inventario.",
@@ -263,3 +264,10 @@ export const ADJUSTMENT_TYPE_OPTIONS = {
   DECREASE: { value: 'decrease', label: UI_TEXT.ADJUSTMENT_TYPE_DECREASE },
   RECOUNT: { value: 'recount', label: UI_TEXT.ADJUSTMENT_TYPE_RECOUNT },
 };
+
+// Re-exporting mockBranches here for easier import in POS page if needed for dialog
+export const mockBranches: Pick<import('@/types').Branch, 'id' | 'name'>[] = [
+  { id: 'b1', name: 'Sucursal Centro' },
+  { id: 'b2', name: 'Sucursal Norte' },
+  { id: 'b3', name: 'Sucursal Playa' },
+];

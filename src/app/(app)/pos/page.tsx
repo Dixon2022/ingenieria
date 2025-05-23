@@ -4,13 +4,22 @@ import { useState, type ReactNode, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { UI_TEXT } from '@/lib/constants';
-import type { Product, CartItem } from '@/types';
+import { UI_TEXT, DOCUMENT_STATUS_OPTIONS, mockBranches } from '@/lib/constants'; // Added mockBranches, DOCUMENT_STATUS_OPTIONS
+import type { Product, CartItem, SalesOrder, SalesOrderItem } from '@/types'; // Added SalesOrder, SalesOrderItem
 import Image from 'next/image';
-import { PlusCircle, MinusCircle, XCircle, ShoppingCart, Cookie, CakeSlice, Coffee, CheckCircle, Search } from 'lucide-react';
+import { PlusCircle, MinusCircle, XCircle, ShoppingCart, Cookie, CakeSlice, Coffee, CheckCircle, Search, Calendar as CalendarIcon, Receipt } from 'lucide-react'; // Added Receipt
 import { useToast } from "@/hooks/use-toast";
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea'; // Added
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'; // Added
+import { Label } from '@/components/ui/label'; // Added
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Added
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Added
+import { Calendar } from "@/components/ui/calendar"; // Added
+import { format } from "date-fns"; // Added
+import { es } from "date-fns/locale"; // Added
+import { Checkbox } from '@/components/ui/checkbox';
+
 
 const mockProducts: Product[] = [
   { id: '1', name: 'Concha de Vainilla', price: 1500, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'sweet bread' },
@@ -25,7 +34,7 @@ const mockProducts: Product[] = [
 
 const categoryIcons: Record<string, ReactNode> = {
   [UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE]: <Cookie className="h-5 w-5 mr-2 text-accent" />,
-  [UI_TEXT.PRODUCT_CATEGORIES.PAN_SALADO]: <Image src="/icons/bread_icon.svg" alt="Pan Salado" width={20} height={20} className="mr-2 text-accent" data-ai-hint="bread loaf"/>, // Using custom SVG if needed
+  [UI_TEXT.PRODUCT_CATEGORIES.PAN_SALADO]: <Image src="/icons/bread_icon.svg" alt="Pan Salado" width={20} height={20} className="mr-2 text-accent" data-ai-hint="bread loaf"/>,
   [UI_TEXT.PRODUCT_CATEGORIES.PASTELES]: <CakeSlice className="h-5 w-5 mr-2 text-accent" />,
   [UI_TEXT.PRODUCT_CATEGORIES.BEBIDAS]: <Coffee className="h-5 w-5 mr-2 text-accent" />,
 };
@@ -61,6 +70,8 @@ export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [currentSaleDetails, setCurrentSaleDetails] = useState<Partial<SalesOrder>>({});
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
@@ -84,17 +95,88 @@ export default function POSPage() {
     );
   };
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
 
-  const handleCheckout = () => {
-    // In a real app, this would process payment and update inventory
+  const handleOpenCheckoutModal = () => {
+    if (cart.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Carrito Vacío",
+        description: "Agregue productos al carrito antes de cobrar.",
+      });
+      return;
+    }
+    setCurrentSaleDetails({
+      documentNumber: `SALE-${Date.now().toString().slice(-6)}`,
+      branchId: mockBranches[0]?.id || '', // Default to first branch
+      orderDate: new Date().toISOString(),
+      items: cart.map(cartItem => ({
+        id: cartItem.id, // Using product id as temp item id
+        productId: cartItem.id,
+        productName: cartItem.name,
+        quantity: cartItem.quantity,
+        unitPrice: cartItem.price,
+      })),
+      status: 'completed',
+      totalAmount: total,
+      customerName: '',
+      paymentMethod: '',
+      notes: '',
+      requiresOpenCashRegister: true, // Default as per business rule for POS
+    });
+    setIsCheckoutModalOpen(true);
+  };
+
+  const handleCloseCheckoutModal = () => {
+    setIsCheckoutModalOpen(false);
+    setCurrentSaleDetails({});
+  }
+
+  const handleSaleDetailChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setCurrentSaleDetails(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleSaleSelectChange = (name: keyof SalesOrder, value: string) => {
+    setCurrentSaleDetails(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleConfirmCheckout = () => {
+    // In a real app, this would save the SalesOrder to a database
+    // and potentially trigger other actions like printing a receipt, updating inventory.
+    
+    if (!currentSaleDetails.branchId || !currentSaleDetails.paymentMethod) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Sucursal y método de pago son requeridos.' });
+        return;
+    }
+
+    const newSale: SalesOrder = {
+      id: `sale-${Date.now()}`,
+      documentNumber: currentSaleDetails.documentNumber || `SALE-${Date.now().toString().slice(-6)}`,
+      branchId: currentSaleDetails.branchId!,
+      orderDate: currentSaleDetails.orderDate || new Date().toISOString(),
+      items: currentSaleDetails.items!,
+      status: 'completed', // POS sales are typically completed immediately
+      totalAmount: currentSaleDetails.totalAmount!,
+      customerName: currentSaleDetails.customerName,
+      paymentMethod: currentSaleDetails.paymentMethod,
+      notes: currentSaleDetails.notes,
+      aiHint: 'sales receipt',
+      requiresOpenCashRegister: true,
+    };
+    
+    console.log("Nueva Venta Creada (POS):", newSale); 
+    // For now, we just log it. In a real app, send to backend.
+
     toast({
       title: "Éxito",
       description: UI_TEXT.TRANSACTION_SUCCESS,
       action: <CheckCircle className="text-green-500" />,
     });
     setCart([]); // Clear cart after checkout
+    handleCloseCheckoutModal();
   };
+
 
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return mockProducts;
@@ -113,6 +195,7 @@ export default function POSPage() {
 
 
   return (
+    <>
     <div className="h-full flex flex-col md:flex-row gap-6">
       <div className="flex-grow md:w-2/3 h-full">
         <Card className="h-full flex flex-col shadow-xl">
@@ -197,7 +280,7 @@ export default function POSPage() {
                 <span>₡{total.toFixed(0)}</span>
               </div>
               <div className="flex gap-2 w-full">
-                <Button onClick={handleCheckout} className="flex-1" size="lg">
+                <Button onClick={handleOpenCheckoutModal} className="flex-1" size="lg">
                   <CheckCircle className="mr-2 h-5 w-5" />
                   {UI_TEXT.CHECKOUT} (₡{total.toFixed(0)})
                 </Button>
@@ -211,6 +294,76 @@ export default function POSPage() {
         </Card>
       </div>
     </div>
+
+    <Dialog open={isCheckoutModalOpen} onOpenChange={setIsCheckoutModalOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center"><Receipt className="mr-2 h-5 w-5"/>Confirmar Venta</DialogTitle>
+            <DialogDescription>
+              Revise los detalles de la venta y complete la información del cliente.
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh] p-1">
+            <div className="grid gap-4 py-4 pr-2">
+                <div className="space-y-1">
+                    <Label htmlFor="checkout-docNo">{UI_TEXT.DOCUMENT_NUMBER}</Label>
+                    <Input id="checkout-docNo" value={currentSaleDetails.documentNumber || ''} readOnly disabled />
+                </div>
+                <div className="space-y-1">
+                    <Label htmlFor="checkout-branch">{UI_TEXT.BRANCH_LABEL}</Label>
+                    <Select name="branchId" value={currentSaleDetails.branchId || ''} onValueChange={(value) => handleSaleSelectChange('branchId', value)}>
+                        <SelectTrigger id="checkout-branch"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                        <SelectContent>
+                        {mockBranches.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-1">
+                    <Label htmlFor="checkout-customerName">{UI_TEXT.CUSTOMER_NAME} (Opcional)</Label>
+                    <Input id="checkout-customerName" name="customerName" value={currentSaleDetails.customerName || ''} onChange={handleSaleDetailChange} placeholder="Cliente Contado"/>
+                </div>
+                <div className="space-y-1">
+                    <Label htmlFor="checkout-paymentMethod">{UI_TEXT.PAYMENT_METHOD}</Label>
+                    <Input id="checkout-paymentMethod" name="paymentMethod" value={currentSaleDetails.paymentMethod || ''} onChange={handleSaleDetailChange} placeholder="Ej: Efectivo, Tarjeta, SINPE"/>
+                </div>
+
+                <Card className="mt-2">
+                    <CardHeader className="p-3">
+                        <CardTitle className="text-md">Resumen del Carrito</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3 text-sm">
+                        <ul className="space-y-1">
+                        {cart.map(item => (
+                            <li key={item.id} className="flex justify-between">
+                            <span>{item.name} (x{item.quantity})</span>
+                            <span>₡{(item.price * item.quantity).toFixed(0)}</span>
+                            </li>
+                        ))}
+                        </ul>
+                        <hr className="my-2"/>
+                        <div className="flex justify-between font-semibold">
+                        <span>Total:</span>
+                        <span>₡{total.toFixed(0)}</span>
+                        </div>
+                    </CardContent>
+                </Card>
+                 <div className="space-y-1">
+                    <Label htmlFor="checkout-notes">{UI_TEXT.NOTES} (Opcional)</Label>
+                    <Textarea id="checkout-notes" name="notes" value={currentSaleDetails.notes || ''} onChange={handleSaleDetailChange} rows={2}/>
+                </div>
+                <div className="flex items-center space-x-2 mt-2">
+                    <Checkbox id="checkout-requiresOpenCashRegister" checked={currentSaleDetails?.requiresOpenCashRegister || false} disabled />
+                    <Label htmlFor="checkout-requiresOpenCashRegister" className="text-xs text-muted-foreground">{UI_TEXT.CASH_REGISTER_OPEN_REQUIRED}</Label>
+                </div>
+            </div>
+          </ScrollArea>
+          <DialogFooter className="pt-4 border-t">
+            <Button variant="outline" onClick={handleCloseCheckoutModal}>{UI_TEXT.CANCEL}</Button>
+            <Button onClick={handleConfirmCheckout}><CheckCircle className="mr-2 h-4 w-4"/>Confirmar y Cobrar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

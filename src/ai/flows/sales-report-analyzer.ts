@@ -1,3 +1,4 @@
+
 // SalesReportAnalyzer flow
 'use server';
 /**
@@ -24,7 +25,7 @@ const AnalyzeSalesReportOutputSchema = z.object({
     .describe('List of item names that need inventory adjustments.'),
   reasoning: z
     .string()
-    .describe('Explanation of why these items were flagged for adjustment.'),
+    .describe('Explanation in Spanish of why these items were flagged for adjustment.'),
 });
 export type AnalyzeSalesReportOutput = z.infer<typeof AnalyzeSalesReportOutputSchema>;
 
@@ -39,13 +40,13 @@ const analyzeSalesReportPrompt = ai.definePrompt({
   prompt: `You are an inventory management expert analyzing sales data for a bakery.
 
   Based on the following sales data, identify which items need inventory adjustments (increase or decrease).
-  Explain your reasoning for each item.
+  Explain your reasoning for each item. **Provide the reasoning in Spanish.**
 
   Sales Data:
   {{salesData}}
 
   Highlight items that need immediate attention and provide a brief explanation.
-  Return the list of items to adjust and the reasoning behind it in the format specified by the output schema.`,
+  Return the list of items to adjust and the reasoning behind it in the format specified by the output schema. The 'reasoning' field must be in Spanish.`,
 });
 
 const analyzeSalesReportFlow = ai.defineFlow(
@@ -59,3 +60,4 @@ const analyzeSalesReportFlow = ai.defineFlow(
     return output!;
   }
 );
+

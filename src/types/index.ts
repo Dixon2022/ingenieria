@@ -1,3 +1,4 @@
+
 export interface Product {
   id: string;
   name: string;
@@ -48,8 +49,6 @@ export interface ManagedUser {
   aiHint?: string; 
 }
 
-// New Types for additional functionalities
-
 export type ProductType = 'third_party_sale' | 'third_party_production' | 'produced_item';
 
 export const PRODUCT_TYPE_OPTIONS: { value: ProductType; label: string }[] = [
@@ -62,28 +61,28 @@ export interface ManagedProduct {
   id: string;
   name: string;
   productType: ProductType;
-  category: string; // e.g., Pan Dulce, Bebidas (if sellable), or Insumos (if third_party_production)
-  price?: number; // Selling price, for 'third_party_sale' and 'produced_item'
-  cost?: number; // Purchase cost for 'third_party_*'; calculated or base for 'produced_item'
-  unit: string; // Unit of sale/production/purchase
-  supplierId?: string; // For third_party_* types
-  recipeId?: string; // For 'produced_item' type, links to Recipe.id
+  category: string; 
+  price?: number; 
+  cost?: number; 
+  unit: string; 
+  supplierId?: string; 
+  recipeId?: string; 
   description?: string;
   imageUrl?: string;
   aiHint?: string;
-  stock: number; // Current stock
-  minStockLevel: number; // Minimum stock level
+  stock: number; 
+  minStockLevel: number; 
 }
 
 export interface RawMaterial {
   id: string;
   name:string;
   description?: string;
-  category: string; // e.g., Ingredientes, Empaques, Limpieza
+  category: string; 
   stock: number;
-  unit: string; // e.g., kg, gr, lt, ml, unidad
-  minStockLevel: number; // Minimum tolerance quantity
-  supplierId?: string; // Optional: preferred supplier
+  unit: string; 
+  minStockLevel: number; 
+  supplierId?: string; 
   imageUrl?: string;
   aiHint?: string;
 }
@@ -95,27 +94,156 @@ export interface Supplier {
   phone?: string;
   address?: string;
   contactPerson?: string;
-  aiHint?: string; // for a generic supplier/company logo placeholder
+  aiHint?: string; 
 }
 
 export interface RecipeIngredient {
-  itemId: string; // ID of RawMaterial or ManagedProduct (sub-assembly)
-  itemType: 'raw_material' | 'product'; // Distinguishes the source of the ingredient
-  name: string; // Denormalized name for display in recipe
+  id: string; // Temp ID for list management in forms
+  itemId: string; 
+  itemType: 'raw_material' | 'product'; 
+  name: string; 
   quantity: number;
-  unit: string; // Unit for this ingredient in the recipe
+  unit: string; 
 }
 
 export interface Recipe {
   id: string;
-  name: string; // e.g., "Receta para Concha de Vainilla"
-  producesProductId: string; // ID of the 'produced_item' ManagedProduct this recipe is for
+  name: string; 
+  producesProductId: string; 
   description?: string;
-  yieldQuantity: number; // How many units this recipe produces (e.g., 12)
-  yieldUnit: string; // Unit of the produced item (e.g., "unidades")
+  yieldQuantity: number; 
+  yieldUnit: string; 
   ingredients: RecipeIngredient[];
-  instructions?: string; // Multi-line text for preparation steps
-  preparationTime?: number; // in minutes
-  cookingTime?: number; // in minutes
-  aiHint?: string; // for an image representing the recipe or final product
+  instructions?: string; 
+  preparationTime?: number; 
+  cookingTime?: number; 
+  aiHint?: string; 
+}
+
+// Document Types
+
+export interface PurchaseOrderItem {
+  id: string; // Temp ID for list management
+  itemId: string; 
+  itemType: 'raw_material' | 'product';
+  itemName: string; 
+  quantity: number;
+  unit: string;
+  unitPrice: number;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  documentNumber: string; 
+  supplierId: string; 
+  supplierName?: string; 
+  branchId: string; 
+  orderDate: string; 
+  expectedDeliveryDate?: string;
+  items: PurchaseOrderItem[];
+  notes?: string;
+  status: 'draft' | 'ordered' | 'partially_received' | 'received' | 'cancelled';
+  totalAmount?: number; // Calculated
+  aiHint?: string; 
+}
+
+export interface SalesOrderItem {
+  id: string; // Temp ID
+  productId: string; 
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface SalesOrder {
+  id: string;
+  documentNumber: string; 
+  customerId?: string; 
+  customerName?: string; 
+  branchId: string;
+  orderDate: string;
+  items: SalesOrderItem[];
+  paymentMethod?: string;
+  notes?: string;
+  status: 'draft' | 'confirmed' | 'completed' | 'cancelled';
+  totalAmount?: number; // Calculated
+  requiresOpenCashRegister?: boolean; // Reminder for business rule
+  aiHint?: string;
+}
+
+export interface InventoryAdjustmentItem {
+  id: string; // Temp ID
+  itemId: string; 
+  itemType: 'raw_material' | 'product';
+  itemName: string;
+  quantity: number; 
+  unit: string;
+  reasonPerItem?: string; 
+}
+
+export interface InventoryAdjustment {
+  id: string;
+  documentNumber: string; 
+  branchId: string;
+  adjustmentDate: string;
+  adjustmentType: 'increase' | 'decrease' | 'recount'; 
+  reasonGeneral: string; 
+  items: InventoryAdjustmentItem[];
+  notes?: string;
+  status: 'draft' | 'completed';
+  aiHint?: string;
+}
+
+export interface StockTransferItem {
+  id: string; // Temp ID
+  itemId: string; 
+  itemType: 'raw_material' | 'product';
+  itemName: string;
+  quantity: number;
+  unit: string;
+}
+
+export interface StockTransfer {
+  id: string;
+  documentNumber: string; 
+  sourceBranchId: string;
+  destinationBranchId: string;
+  transferDate: string;
+  expectedArrivalDate?: string;
+  actualArrivalDate?: string;
+  items: StockTransferItem[];
+  notes?: string;
+  status: 'draft' | 'pending_dispatch' | 'in_transit' | 'received' | 'cancelled';
+  aiHint?: string;
+}
+
+export interface ProductionOrderItemConsumed { 
+  id: string; // Temp ID
+  itemId: string; 
+  itemType: 'raw_material' | 'product';
+  itemName: string;
+  quantityRequired: number; 
+  quantityConsumed: number; 
+  unit: string;
+}
+
+export interface ProductionOrder {
+  id: string;
+  documentNumber: string; 
+  branchId: string;
+  recipeId: string; 
+  recipeName?: string; 
+  productIdProduced: string; 
+  productNameProduced?: string; 
+  quantityToProduce: number; 
+  unitProduced: string;
+  plannedStartDate: string;
+  actualStartDate?: string;
+  plannedEndDate?: string;
+  actualEndDate?: string;
+  consumedItems: ProductionOrderItemConsumed[];
+  actualYield?: number; 
+  notes?: string;
+  status: 'planned' | 'in_progress' | 'completed' | 'cancelled';
+  aiHint?: string;
 }

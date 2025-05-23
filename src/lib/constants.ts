@@ -1,3 +1,4 @@
+
 export const APP_NAME = "AmorPOS";
 export const BAKERY_NAME = "Panadería Amores";
 
@@ -13,6 +14,12 @@ export const ROUTES = {
   REPORTS: "/reports",
   BRANCHES: "/branches",
   USERS: "/users",
+  // Document Routes
+  PURCHASE_ORDERS: "/purchase-orders",
+  SALES_ORDERS: "/sales-orders",
+  INVENTORY_ADJUSTMENTS: "/inventory-adjustments",
+  STOCK_TRANSFERS: "/stock-transfers",
+  PRODUCTION_ORDERS: "/production-orders",
 };
 
 export const UI_TEXT = {
@@ -162,8 +169,97 @@ export const UI_TEXT = {
   ADD_INGREDIENT: "Agregar Ingrediente",
   ITEM_TYPE: "Tipo de Item",
   QUANTITY: "Cantidad",
+
+  // Document UI Texts
+  PURCHASE_ORDERS_TITLE: "Órdenes de Compra",
+  MANAGE_PURCHASE_ORDERS_DESCRIPTION: "Cree y administre órdenes de compra a proveedores.",
+  ADD_PURCHASE_ORDER: "Nueva Orden de Compra",
+  EDIT_PURCHASE_ORDER: "Editar Orden de Compra",
+  DOCUMENT_NUMBER: "No. Documento",
+  ORDER_DATE: "Fecha de Orden",
+  EXPECTED_DELIVERY_DATE: "Fecha Entrega Estimada",
+  ITEMS: "Artículos",
+  ADD_ITEM: "Agregar Artículo",
+  UNIT_PRICE: "Precio Unit.",
+  TOTAL_AMOUNT: "Monto Total",
+  NOTES: "Notas",
+  DOCUMENT_STATUS_DRAFT: "Borrador",
+  DOCUMENT_STATUS_ORDERED: "Ordenado",
+  DOCUMENT_STATUS_RECEIVED: "Recibido",
+  DOCUMENT_STATUS_CANCELLED: "Cancelado",
+  DOCUMENT_STATUS_COMPLETED: "Completado",
+  DOCUMENT_STATUS_CONFIRMED: "Confirmado",
+  DOCUMENT_STATUS_IN_PROGRESS: "En Progreso",
+  DOCUMENT_STATUS_PENDING_DISPATCH: "Pendiente Despacho",
+  DOCUMENT_STATUS_IN_TRANSIT: "En Tránsito",
+  DOCUMENT_STATUS_PLANNED: "Planificado",
+
+
+  SALES_ORDERS_TITLE: "Documentos de Venta",
+  MANAGE_SALES_ORDERS_DESCRIPTION: "Consulte y cree documentos de venta (boletas/facturas).",
+  ADD_SALES_ORDER: "Nuevo Documento de Venta",
+  EDIT_SALES_ORDER: "Editar Documento de Venta",
+  CUSTOMER_NAME: "Nombre Cliente",
+  PAYMENT_METHOD: "Método de Pago",
+  CASH_REGISTER_OPEN_REQUIRED: "Requiere caja abierta (recordatorio)",
+
+  INVENTORY_ADJUSTMENTS_TITLE: "Ajustes de Inventario",
+  MANAGE_INVENTORY_ADJUSTMENTS_DESCRIPTION: "Registre ajustes manuales al inventario.",
+  ADD_INVENTORY_ADJUSTMENT: "Nuevo Ajuste",
+  EDIT_INVENTORY_ADJUSTMENT: "Editar Ajuste",
+  ADJUSTMENT_DATE: "Fecha de Ajuste",
+  ADJUSTMENT_TYPE: "Tipo de Ajuste",
+  ADJUSTMENT_TYPE_INCREASE: "Aumento",
+  ADJUSTMENT_TYPE_DECREASE: "Disminución",
+  ADJUSTMENT_TYPE_RECOUNT: "Recuento",
+  REASON_GENERAL: "Motivo General",
+  QUANTITY_ADJUSTED: "Cantidad Ajustada",
+  REASON_PER_ITEM: "Motivo (Artículo)",
+
+  STOCK_TRANSFERS_TITLE: "Traslados de Mercancía",
+  MANAGE_STOCK_TRANSFERS_DESCRIPTION: "Gestione traslados de inventario entre sucursales.",
+  ADD_STOCK_TRANSFER: "Nuevo Traslado",
+  EDIT_STOCK_TRANSFER: "Editar Traslado",
+  SOURCE_BRANCH: "Sucursal Origen",
+  DESTINATION_BRANCH: "Sucursal Destino",
+  TRANSFER_DATE: "Fecha de Traslado",
+  EXPECTED_ARRIVAL_DATE: "Fecha Llegada Estimada",
+  QUANTITY_TRANSFERRED: "Cantidad Trasladada",
+
+  PRODUCTION_ORDERS_TITLE: "Órdenes de Producción",
+  MANAGE_PRODUCTION_ORDERS_DESCRIPTION: "Planifique y registre la producción de artículos.",
+  ADD_PRODUCTION_ORDER: "Nueva Orden de Producción",
+  EDIT_PRODUCTION_ORDER: "Editar Orden de Producción",
+  PRODUCT_TO_PRODUCE: "Producto a Producir",
+  QUANTITY_TO_PRODUCE: "Cantidad a Producir",
+  PLANNED_START_DATE: "Fecha Inicio Plan.",
+  PLANNED_END_DATE: "Fecha Fin Plan.",
+  CONSUMED_ITEMS: "Insumos Consumidos",
+  QUANTITY_REQUIRED: "Cant. Requerida",
+  QUANTITY_CONSUMED: "Cant. Consumida",
+  ACTUAL_YIELD: "Producción Real",
 };
 
 export const ALL_UNITS = Object.values(UI_TEXT.UNITS);
 export const ALL_PRODUCT_CATEGORIES = Object.values(UI_TEXT.PRODUCT_CATEGORIES);
 export const ALL_RAW_MATERIAL_CATEGORIES = Object.values(UI_TEXT.RAW_MATERIAL_CATEGORIES);
+
+export const DOCUMENT_STATUS_OPTIONS = {
+  DRAFT: { value: 'draft', label: UI_TEXT.DOCUMENT_STATUS_DRAFT },
+  ORDERED: { value: 'ordered', label: UI_TEXT.DOCUMENT_STATUS_ORDERED },
+  PARTIALLY_RECEIVED: { value: 'partially_received', label: 'Recibido Parcialmente' },
+  RECEIVED: { value: 'received', label: UI_TEXT.DOCUMENT_STATUS_RECEIVED },
+  CANCELLED: { value: 'cancelled', label: UI_TEXT.DOCUMENT_STATUS_CANCELLED },
+  CONFIRMED: { value: 'confirmed', label: UI_TEXT.DOCUMENT_STATUS_CONFIRMED },
+  COMPLETED: { value: 'completed', label: UI_TEXT.DOCUMENT_STATUS_COMPLETED },
+  PENDING_DISPATCH: { value: 'pending_dispatch', label: UI_TEXT.DOCUMENT_STATUS_PENDING_DISPATCH },
+  IN_TRANSIT: { value: 'in_transit', label: UI_TEXT.DOCUMENT_STATUS_IN_TRANSIT },
+  PLANNED: { value: 'planned', label: UI_TEXT.DOCUMENT_STATUS_PLANNED },
+  IN_PROGRESS: { value: 'in_progress', label: UI_TEXT.DOCUMENT_STATUS_IN_PROGRESS },
+};
+
+export const ADJUSTMENT_TYPE_OPTIONS = {
+  INCREASE: { value: 'increase', label: UI_TEXT.ADJUSTMENT_TYPE_INCREASE },
+  DECREASE: { value: 'decrease', label: UI_TEXT.ADJUSTMENT_TYPE_DECREASE },
+  RECOUNT: { value: 'recount', label: UI_TEXT.ADJUSTMENT_TYPE_RECOUNT },
+};

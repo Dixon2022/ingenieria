@@ -6,16 +6,21 @@ import { Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton
 import { APP_NAME, BAKERY_NAME, ROUTES, UI_TEXT } from "@/lib/constants";
 import { 
   ShoppingCart, 
-  Package, 
+  LayoutDashboard, // For Inventory Overview
   BarChart3, 
   Utensils, 
   Briefcase, 
   Users,
-  ClipboardList, // For Products
-  Beaker,       // For Raw Materials
-  Truck,        // For Suppliers
-  BookCopy,     // For Recipes
-  LayoutDashboard // For Inventory Overview
+  ClipboardList, 
+  Beaker,       
+  Truck,        
+  BookCopy,
+  ClipboardPlus, // Purchase Orders
+  Receipt,       // Sales Orders
+  FileEdit,      // Inventory Adjustments
+  ArrowRightLeft,// Stock Transfers
+  Cog,           // Production Orders (Factory not available)
+  Archive // Section icon for Documents
 } from "lucide-react";
 
 const 판매_및_재고_섹션 = [
@@ -30,13 +35,22 @@ const 제품_관리_섹션 = [
   { href: ROUTES.SUPPLIERS, label: UI_TEXT.SUPPLIERS_TITLE, icon: Truck },
 ];
 
+const 문서_관리_섹션 = [
+  { href: ROUTES.PURCHASE_ORDERS, label: UI_TEXT.PURCHASE_ORDERS_TITLE, icon: ClipboardPlus },
+  { href: ROUTES.SALES_ORDERS, label: UI_TEXT.SALES_ORDERS_TITLE, icon: Receipt },
+  { href: ROUTES.INVENTORY_ADJUSTMENTS, label: UI_TEXT.INVENTORY_ADJUSTMENTS_TITLE, icon: FileEdit },
+  { href: ROUTES.STOCK_TRANSFERS, label: UI_TEXT.STOCK_TRANSFERS_TITLE, icon: ArrowRightLeft },
+  { href: ROUTES.PRODUCTION_ORDERS, label: UI_TEXT.PRODUCTION_ORDERS_TITLE, icon: Cog },
+];
+
+
 const 관리_섹션 = [
   { href: ROUTES.BRANCHES, label: UI_TEXT.BRANCHES_TITLE, icon: Briefcase },
   { href: ROUTES.USERS, label: UI_TEXT.USERS_TITLE, icon: Users },
   { href: ROUTES.REPORTS, label: UI_TEXT.REPORTS_TITLE, icon: BarChart3 },
 ];
 
-const renderNavItems = (items: typeof 판매_및_재고_섹션, pathname: string) => {
+const renderNavItems = (items: { href: string; label: string; icon: React.ElementType }[], pathname: string) => {
   return items.map((item) => (
     <SidebarMenuItem key={item.href}>
       <Link href={item.href} legacyBehavior passHref>
@@ -46,7 +60,7 @@ const renderNavItems = (items: typeof 판매_및_재고_섹션, pathname: string
           tooltip={item.label}
           className="justify-start"
         >
-          <a> {/* This <a> tag is important when asChild is true and Link is the parent */}
+          <a> 
             <item.icon className="h-5 w-5" />
             <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
           </a>
@@ -75,6 +89,14 @@ export default function SidebarNav() {
         {renderNavItems(판매_및_재고_섹션, pathname)}
         <SidebarSeparator className="my-2" />
         {renderNavItems(제품_관리_섹션, pathname)}
+        <SidebarSeparator className="my-2" />
+         <SidebarMenuItem>
+          <div className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/70 flex items-center group-data-[collapsible=icon]:justify-center">
+            <Archive className="h-4 w-4 mr-2 group-data-[collapsible=icon]:mr-0" />
+            <span className="group-data-[collapsible=icon]:hidden">Documentos</span>
+          </div>
+        </SidebarMenuItem>
+        {renderNavItems(문서_관리_섹션, pathname)}
         <SidebarSeparator className="my-2" />
         {renderNavItems(관리_섹션, pathname)}
       </SidebarMenu>

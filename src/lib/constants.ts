@@ -1,5 +1,5 @@
 
-export const APP_NAME = "Panadería Amores"; // Changed from AmorPOS
+export const APP_NAME = "Panadería Amores";
 export const BAKERY_NAME = "Panadería Amores";
 
 export const ROUTES = {
@@ -35,7 +35,7 @@ export const UI_TEXT = {
   RAW_MATERIALS_TITLE: "Materia Prima",
   RECIPES_TITLE: "Recetas",
   SUPPLIERS_TITLE: "Proveedores",
-  REPORTS_TITLE: "Análisis de Ventas IA",
+  REPORTS_TITLE: "Consulta de Ventas", // Changed from Análisis de Ventas IA
   BRANCHES_TITLE: "Sucursales",
   USERS_TITLE: "Usuarios",
   LOADING: "Cargando...",
@@ -63,10 +63,10 @@ export const UI_TEXT = {
     {"item": "Bolillo", "stock": 10}
   ]
 }`, 
-  ANALYZE_SALES: "Analizar Ventas con IA",
-  ANALYSIS_RESULTS: "Resultados del Análisis",
-  ITEMS_TO_ADJUST: "Artículos para Ajustar Inventario",
-  REASONING: "Justificación del Análisis (en Español)",
+  ANALYZE_SALES: "Analizar Ventas con IA", // Will be removed or repurposed if no AI analysis
+  ANALYSIS_RESULTS: "Resultados del Análisis", // Will be removed
+  ITEMS_TO_ADJUST: "Artículos para Ajustar Inventario", // Will be removed
+  REASONING: "Justificación del Análisis (en Español)", // Will be removed
   NO_DATA: "No hay datos para mostrar.",
   NO_ITEMS_IN_CART: "El carrito está vacío.",
   TRANSACTION_SUCCESS: "Transacción completada.",
@@ -100,18 +100,18 @@ export const UI_TEXT = {
     PAQUETE: "paquete",
   },
   VIEW_DETAILS: "Ver detalles",
-  INVENTORY_ADVICE: "Consejos de Inventario generados por Inteligencia Artificial.",
-  SALES_REPORT_DESCRIPTION: "Seleccione un rango de fechas y sucursal para analizar las ventas y obtener recomendaciones de inventario impulsadas por IA.",
-  REPORTS_FILTER_TITLE: "Filtros para el Análisis de Ventas",
+  INVENTORY_ADVICE: "Consejos de Inventario generados por Inteligencia Artificial.", // Will be removed
+  SALES_REPORT_DESCRIPTION: "Filtre y visualice los documentos de venta por rango de fechas y sucursal.", // Changed
+  REPORTS_FILTER_TITLE: "Filtros para Consulta de Ventas", // Changed
   START_DATE: "Fecha de Inicio",
   END_DATE: "Fecha de Fin",
   SELECT_BRANCH: "Seleccionar Sucursal",
   ALL_BRANCHES: "Todas las Sucursales",
-  GENERATE_ANALYSIS: "Generar Análisis", // Changed from GENERATE_REPORT
-  NO_ITEMS_TO_ADJUST_SUGGESTED: "Según el análisis, no se sugieren ajustes de inventario con los datos proporcionados.",
-  ANALYSIS_DATA_UNAVAILABLE: "Información del análisis no disponible o incompleta.",
-  NO_REASONING_PROVIDED: "Justificación no proporcionada por el análisis o no aplicable.",
-  DOWNLOAD_ANALYSIS_BUTTON: "Descargar Análisis",
+  GENERATE_REPORT: "Consultar Ventas", // Changed from GENERATE_ANALYSIS
+  NO_ITEMS_TO_ADJUST_SUGGESTED: "Según el análisis, no se sugieren ajustes de inventario con los datos proporcionados.", // Will be removed
+  ANALYSIS_DATA_UNAVAILABLE: "Información del análisis no disponible o incompleta.", // Will be removed
+  NO_REASONING_PROVIDED: "Justificación no proporcionada por el análisis o no aplicable.", // Will be removed
+  DOWNLOAD_ANALYSIS_BUTTON: "Descargar Análisis", // Will be removed
   
   ADD_BRANCH: "Agregar Sucursal",
   EDIT_BRANCH: "Editar Sucursal",
@@ -380,3 +380,5 @@ export const mockSalesOrdersForReports: import('@/types').SalesOrder[] = [
     aiHint: 'sales receipt document'
   },
 ];
+
+    

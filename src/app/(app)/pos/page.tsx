@@ -1,31 +1,41 @@
 
 "use client";
-import { useState, type ReactNode, useMemo } from 'react';
+import { useState, type ReactNode, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { UI_TEXT, DOCUMENT_STATUS_OPTIONS, mockBranches } from '@/lib/constants'; // Added mockBranches, DOCUMENT_STATUS_OPTIONS
-import type { Product, CartItem, SalesOrder, SalesOrderItem } from '@/types'; // Added SalesOrder, SalesOrderItem
+import { UI_TEXT, DOCUMENT_STATUS_OPTIONS, mockBranches, mockRecipesForPOS, ALL_UNITS } from '@/lib/constants';
+import type { Product, CartItem, SalesOrder, SalesOrderItem, Recipe, RecipeIngredient } from '@/types';
 import Image from 'next/image';
-import { PlusCircle, MinusCircle, XCircle, ShoppingCart, Cookie, CakeSlice, Coffee, CheckCircle, Search, Calendar as CalendarIcon, Receipt } from 'lucide-react'; // Added Receipt
+import { PlusCircle, MinusCircle, XCircle, ShoppingCart, Cookie, CakeSlice, Coffee, CheckCircle, Search, Receipt, BookOpen, ListOrdered, Clock } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea'; // Added
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'; // Added
-import { Label } from '@/components/ui/label'; // Added
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Added
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Added
-import { Calendar } from "@/components/ui/calendar"; // Added
-import { format } from "date-fns"; // Added
-import { es } from "date-fns/locale"; // Added
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+// Note: Popover and Calendar imports were here but not directly used by POS for checkout date, orderDate defaults to now.
+// If orderDate needs to be selectable for a POS sale (uncommon), they could be re-added.
+
+// Communicate with SalesOrdersPage state (conceptual, not actual cross-page state update here)
+// In a real app, this would be a global state manager or API call.
+let salesOrdersFromPOS: SalesOrder[] = [];
+export const addSalesOrderFromPOS = (order: SalesOrder) => {
+  salesOrdersFromPOS.push(order);
+};
+export const getSalesOrdersFromPOS = () => {
+    const orders = [...salesOrdersFromPOS];
+    salesOrdersFromPOS = []; // Clear after fetching if they are meant to be transient
+    return orders;
+};
 
 
 const mockProducts: Product[] = [
-  { id: '1', name: 'Concha de Vainilla', price: 1500, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'sweet bread' },
+  { id: '1', name: 'Concha de Vainilla', price: 1500, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'sweet bread', recipeId: 'r1' },
   { id: '2', name: 'Bolillo', price: 500, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_SALADO, aiHint: 'bread roll' },
   { id: '3', name: 'Oreja', price: 1800, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'palmier pastry' },
-  { id: '4', name: 'Empanada de Piña', price: 2000, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'empanada pastry' },
+  { id: '4', name: 'Empanada de Piña', price: 2000, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'empanada pastry', recipeId: 'r_empanada' },
   { id: '5', name: 'Pastel de Chocolate (Rebanada)', price: 4500, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PASTELES, aiHint: 'chocolate cake' },
   { id: '6', name: 'Café Americano', price: 2500, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.BEBIDAS, aiHint: 'coffee cup' },
   { id: '7', name: 'Croissant', price: 2200, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'croissant pastry' },
@@ -40,7 +50,7 @@ const categoryIcons: Record<string, ReactNode> = {
 };
 
 
-function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: (product: Product) => void }) {
+function ProductCard({ product, onAddToCart, onViewRecipe }: { product: Product; onAddToCart: (product: Product) => void; onViewRecipe: (product: Product) => void; }) {
   return (
     <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
       <CardHeader className="p-0 relative">
@@ -50,17 +60,23 @@ function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: 
         </div>
       </CardHeader>
       <CardContent className="p-4 flex-grow">
-        <h3 className="text-lg font-semibold mb-1 truncate">{product.name}</h3>
+        <h3 className="text-lg font-semibold mb-1 truncate" title={product.name}>{product.name}</h3>
         <p className="text-sm text-muted-foreground flex items-center">
           {categoryIcons[product.category] || null}
           {product.category}
         </p>
       </CardContent>
-      <CardFooter className="p-4 border-t">
-        <Button onClick={() => onAddToCart(product)} className="w-full" variant="default">
+      <CardFooter className="p-3 border-t grid grid-cols-2 gap-2">
+        <Button onClick={() => onAddToCart(product)} className="w-full" variant="default" size="sm">
           <ShoppingCart className="mr-2 h-4 w-4" />
           {UI_TEXT.ADD_TO_CART}
         </Button>
+         {product.recipeId && (
+          <Button onClick={() => onViewRecipe(product)} className="w-full" variant="outline" size="sm">
+            <BookOpen className="mr-2 h-4 w-4" />
+            {UI_TEXT.VIEW_RECIPE}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
@@ -72,6 +88,9 @@ export default function POSPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [currentSaleDetails, setCurrentSaleDetails] = useState<Partial<SalesOrder>>({});
+  const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
@@ -108,10 +127,10 @@ export default function POSPage() {
     }
     setCurrentSaleDetails({
       documentNumber: `SALE-${Date.now().toString().slice(-6)}`,
-      branchId: mockBranches[0]?.id || '', // Default to first branch
+      branchId: mockBranches[0]?.id || '', 
       orderDate: new Date().toISOString(),
       items: cart.map(cartItem => ({
-        id: cartItem.id, // Using product id as temp item id
+        id: cartItem.id, 
         productId: cartItem.id,
         productName: cartItem.name,
         quantity: cartItem.quantity,
@@ -122,7 +141,7 @@ export default function POSPage() {
       customerName: '',
       paymentMethod: '',
       notes: '',
-      requiresOpenCashRegister: true, // Default as per business rule for POS
+      requiresOpenCashRegister: true,
     });
     setIsCheckoutModalOpen(true);
   };
@@ -141,40 +160,49 @@ export default function POSPage() {
     setCurrentSaleDetails(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleConfirmCheckout = () => {
-    // In a real app, this would save the SalesOrder to a database
-    // and potentially trigger other actions like printing a receipt, updating inventory.
-    
+  const handleConfirmCheckout = () => {    
     if (!currentSaleDetails.branchId || !currentSaleDetails.paymentMethod) {
         toast({ variant: 'destructive', title: 'Error', description: 'Sucursal y método de pago son requeridos.' });
         return;
     }
 
     const newSale: SalesOrder = {
-      id: `sale-${Date.now()}`,
+      id: `so-pos-${Date.now()}`, // Unique ID for POS sales
       documentNumber: currentSaleDetails.documentNumber || `SALE-${Date.now().toString().slice(-6)}`,
       branchId: currentSaleDetails.branchId!,
       orderDate: currentSaleDetails.orderDate || new Date().toISOString(),
       items: currentSaleDetails.items!,
-      status: 'completed', // POS sales are typically completed immediately
+      status: 'completed',
       totalAmount: currentSaleDetails.totalAmount!,
       customerName: currentSaleDetails.customerName,
-      paymentMethod: currentSaleDetails.paymentMethod,
+      paymentMethod: currentSaleDetails.paymentMethod!,
       notes: currentSaleDetails.notes,
       aiHint: 'sales receipt',
       requiresOpenCashRegister: true,
     };
     
-    console.log("Nueva Venta Creada (POS):", newSale); 
-    // For now, we just log it. In a real app, send to backend.
+    addSalesOrderFromPOS(newSale); // Add to the list for SalesOrdersPage
 
     toast({
       title: "Éxito",
       description: UI_TEXT.TRANSACTION_SUCCESS,
       action: <CheckCircle className="text-green-500" />,
     });
-    setCart([]); // Clear cart after checkout
+    setCart([]); 
     handleCloseCheckoutModal();
+  };
+
+  const handleViewRecipe = (product: Product) => {
+    if (product.recipeId) {
+      const recipe = mockRecipesForPOS.find(r => r.id === product.recipeId);
+      if (recipe) {
+        // @ts-ignore // RecipeIngredient has temp id in full Recipe type, not needed here.
+        setSelectedRecipe(recipe);
+        setIsRecipeModalOpen(true);
+      } else {
+        toast({ variant: "destructive", title: "Error", description: "Receta no encontrada." });
+      }
+    }
   };
 
 
@@ -223,7 +251,7 @@ export default function POSPage() {
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {products.map(product => (
-                      <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
+                      <ProductCard key={product.id} product={product} onAddToCart={addToCart} onViewRecipe={handleViewRecipe} />
                     ))}
                   </div>
                 </div>
@@ -295,6 +323,7 @@ export default function POSPage() {
       </div>
     </div>
 
+    {/* Checkout Dialog */}
     <Dialog open={isCheckoutModalOpen} onOpenChange={setIsCheckoutModalOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -363,8 +392,56 @@ export default function POSPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+    {/* Recipe View Dialog */}
+    {selectedRecipe && (
+        <Dialog open={isRecipeModalOpen} onOpenChange={setIsRecipeModalOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                <BookOpen className="mr-2 h-5 w-5 text-primary" />
+                {UI_TEXT.RECIPE_DETAILS}: {selectedRecipe.name}
+              </DialogTitle>
+              <DialogDescription>
+                Rendimiento: {selectedRecipe.yieldQuantity} {selectedRecipe.yieldUnit}
+              </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="max-h-[60vh] p-1">
+              <div className="space-y-4 py-4 pr-2">
+                <div>
+                  <h4 className="font-semibold text-md mb-1 flex items-center">
+                    <ListOrdered className="mr-2 h-4 w-4 text-muted-foreground"/>{UI_TEXT.INGREDIENTS}
+                  </h4>
+                  <ul className="list-disc list-inside pl-4 space-y-1 text-sm bg-secondary/30 p-3 rounded-md">
+                    {selectedRecipe.ingredients.map((ing, index) => (
+                      <li key={index}>
+                        {ing.name}: {ing.quantity} {ing.unit}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {selectedRecipe.instructions && (
+                  <div>
+                    <h4 className="font-semibold text-md mb-1 flex items-center">
+                        <ListOrdered className="mr-2 h-4 w-4 text-muted-foreground"/>{UI_TEXT.INSTRUCTIONS}
+                    </h4>
+                    <Textarea value={selectedRecipe.instructions} readOnly rows={Math.min(10, selectedRecipe.instructions.split('\n').length + 1)} className="text-sm bg-secondary/30"/>
+                  </div>
+                )}
+                 {(selectedRecipe.preparationTime || selectedRecipe.cookingTime) && (
+                    <div className="text-sm text-muted-foreground space-y-1">
+                        {selectedRecipe.preparationTime && <p className="flex items-center"><Clock className="mr-2 h-4 w-4"/> {UI_TEXT.PREPARATION_TIME}: {selectedRecipe.preparationTime} min.</p>}
+                        {selectedRecipe.cookingTime && <p className="flex items-center"><Clock className="mr-2 h-4 w-4"/> {UI_TEXT.COOKING_TIME}: {selectedRecipe.cookingTime} min.</p>}
+                    </div>
+                 )}
+              </div>
+            </ScrollArea>
+            <DialogFooter className="pt-4 border-t">
+              <Button variant="outline" onClick={() => setIsRecipeModalOpen(false)}>{UI_TEXT.CANCEL}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }
-
-    

@@ -159,6 +159,8 @@ export const UI_TEXT = {
   
   ADD_RECIPE: "Crear Receta",
   EDIT_RECIPE: "Editar Receta",
+  VIEW_RECIPE: "Ver Receta", // Added
+  RECIPE_DETAILS: "Detalles de la Receta", // Added
   RECIPE_NAME: "Nombre de la Receta",
   PRODUCES_PRODUCT: "Producto Elaborado",
   YIELD_QUANTITY: "Cantidad Producida",
@@ -197,12 +199,13 @@ export const UI_TEXT = {
 
 
   SALES_ORDERS_TITLE: "Documentos de Venta",
-  MANAGE_SALES_ORDERS_DESCRIPTION: "Consulte y cree documentos de venta (boletas/facturas).",
-  ADD_SALES_ORDER: "Nuevo Documento de Venta",
+  MANAGE_SALES_ORDERS_DESCRIPTION: "Consulte documentos de venta (boletas/facturas).", // Updated
+  ADD_SALES_ORDER: "Nuevo Documento de Venta", // Will be removed from SalesOrderPage but keep for POS
   EDIT_SALES_ORDER: "Editar Documento de Venta",
+  VIEW_SALES_ORDER: "Ver Documento de Venta", // Added
   CUSTOMER_NAME: "Nombre Cliente",
   PAYMENT_METHOD: "Método de Pago",
-  CASH_REGISTER_OPEN_REQUIRED: "Requiere caja abierta (PDV)", // Updated
+  CASH_REGISTER_OPEN_REQUIRED: "Requiere caja abierta (PDV)", 
 
   INVENTORY_ADJUSTMENTS_TITLE: "Ajustes de Inventario",
   MANAGE_INVENTORY_ADJUSTMENTS_DESCRIPTION: "Registre ajustes manuales al inventario.",
@@ -270,4 +273,34 @@ export const mockBranches: Pick<import('@/types').Branch, 'id' | 'name'>[] = [
   { id: 'b1', name: 'Sucursal Centro' },
   { id: 'b2', name: 'Sucursal Norte' },
   { id: 'b3', name: 'Sucursal Playa' },
+];
+
+// Mock Recipes for POS consumption
+export const mockRecipesForPOS: Pick<import('@/types').Recipe, 'id' | 'name' | 'producesProductId' | 'ingredients' | 'instructions'| 'yieldQuantity' | 'yieldUnit'>[] = [
+ { 
+    id: 'r1', 
+    name: 'Receta de Concha de Vainilla (Estándar)', 
+    producesProductId: '1', // Links to 'Concha de Vainilla' product
+    yieldQuantity: 12, 
+    yieldUnit: UI_TEXT.UNITS.UNIDADES,
+    ingredients: [
+      { id: 'ing_temp_1', itemId: 'rm1', itemType: 'raw_material', name: 'Harina de Trigo', quantity: 0.5, unit: UI_TEXT.UNITS.KG },
+      { id: 'ing_temp_2', itemId: 'rm2', itemType: 'raw_material', name: 'Azúcar Refinada', quantity: 0.2, unit: UI_TEXT.UNITS.KG },
+      { id: 'ing_temp_3', itemId: 'rm_egg', itemType: 'raw_material', name: 'Huevo Fresco', quantity: 2, unit: UI_TEXT.UNITS.UNIDADES },
+    ],
+    instructions: "1. Mezclar ingredientes secos.\n2. Agregar líquidos y amasar.\n3. Formar y hornear.",
+  },
+   { 
+    id: 'r_empanada', 
+    name: 'Receta de Empanada de Piña', 
+    producesProductId: '4', // Links to 'Empanada de Piña'
+    yieldQuantity: 10, 
+    yieldUnit: UI_TEXT.UNITS.UNIDADES,
+    ingredients: [
+      { id: 'ing_emp_1', itemId: 'rm1', itemType: 'raw_material', name: 'Harina de Trigo', quantity: 0.4, unit: UI_TEXT.UNITS.KG },
+      { id: 'ing_emp_2', itemId: 'rm_mantequilla', itemType: 'raw_material', name: 'Mantequilla', quantity: 0.1, unit: UI_TEXT.UNITS.KG },
+      { id: 'ing_emp_3', itemId: 'rm_pina', itemType: 'raw_material', name: 'Relleno de Piña', quantity: 0.3, unit: UI_TEXT.UNITS.KG },
+    ],
+    instructions: "1. Preparar masa.\n2. Rellenar y sellar.\n3. Hornear hasta dorar.",
+  },
 ];

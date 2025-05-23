@@ -13,12 +13,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { UI_TEXT, DOCUMENT_STATUS_OPTIONS } from '@/lib/constants';
 import type { SalesOrder, SalesOrderItem, Branch, ManagedProduct } from '@/types';
-import { Edit3, Trash2, PlusCircle, Receipt, PackagePlus, PackageMinus, Calendar as CalendarIcon, Search } from 'lucide-react';
+import { Eye, Receipt, Calendar as CalendarIcon, Search } from 'lucide-react'; // Changed icons
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { getSalesOrdersFromPOS } from '@/app/(app)/pos/page'; // Import function to get POS sales
 
 // Mock data
 const mockBranches: Pick<Branch, 'id' | 'name'>[] = [
@@ -50,118 +51,30 @@ export default function SalesOrdersPage() {
   const [salesOrders, setSalesOrders] = useState<SalesOrder[]>(initialSalesOrders);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<Partial<SalesOrder>>({});
-  const [editingOrder, setEditingOrder] = useState<SalesOrder | null>(null);
+  // editingOrder is no longer needed as page is view-only for existing items.
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Fetch sales orders created from POS when component mounts or focuses
+    const newPOSSales = getSalesOrdersFromPOS();
+    if (newPOSSales.length > 0) {
+      setSalesOrders(prevOrders => [...prevOrders, ...newPOSSales]);
+    }
+  }, []); // Could add focus listener for more real-time update if needed
 
   const calculateTotalAmount = (items: SalesOrderItem[] = []) => {
     return items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
   };
 
-  const handleOpenModal = (order?: SalesOrder) => {
-    setEditingOrder(order || null);
-    const initialItems = order?.items?.map(it => ({...it})) || [{ id: Date.now().toString(), productId: '', productName: '', quantity: 1, unitPrice: 0 }];
-    setCurrentOrder(order ? { ...order, items: initialItems } : { 
-      documentNumber: `SO-${Date.now().toString().slice(-4)}`, 
-      branchId: '', 
-      orderDate: new Date().toISOString(), 
-      items: initialItems, 
-      status: 'draft',
-      requiresOpenCashRegister: true, 
-    });
+  const handleOpenViewModal = (order: SalesOrder) => {
+    setCurrentOrder({ ...order });
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setCurrentOrder({});
-    setEditingOrder(null);
-  };
-
-  const handleSaveOrder = () => {
-    if (!currentOrder.documentNumber || !currentOrder.branchId || !currentOrder.orderDate || !currentOrder.status) {
-      toast({ variant: 'destructive', title: 'Error', description: 'No. Documento, Sucursal, Fecha y Estado son requeridos.' });
-      return;
-    }
-    if (!currentOrder.items || currentOrder.items.length === 0) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Debe agregar al menos un artículo.' });
-      return;
-    }
-
-    const orderToSave: SalesOrder = {
-      ...(editingOrder || { id: `so${Date.now()}` }),
-      ...currentOrder,
-      totalAmount: calculateTotalAmount(currentOrder.items),
-      aiHint: 'sales receipt document'
-    } as SalesOrder;
-
-    if (editingOrder) {
-      setSalesOrders(salesOrders.map(o => o.id === editingOrder.id ? orderToSave : o));
-      toast({ title: UI_TEXT.EDIT_SALES_ORDER, description: `El documento "${orderToSave.documentNumber}" ha sido actualizado.` });
-    } else {
-      setSalesOrders([...salesOrders, orderToSave]);
-      toast({ title: UI_TEXT.ADD_SALES_ORDER, description: `El documento "${orderToSave.documentNumber}" ha sido agregado.` });
-    }
-    handleCloseModal();
-  };
-
-  const handleDeleteOrder = (orderId: string) => {
-    const orderNumber = salesOrders.find(o => o.id === orderId)?.documentNumber;
-    setSalesOrders(salesOrders.filter(o => o.id !== orderId));
-    toast({ title: 'Documento Eliminado', description: `El documento "${orderNumber}" ha sido eliminado.`, variant: 'destructive' });
-  };
-  
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setCurrentOrder(prev => prev ? { ...prev, [name]: value } : {});
-  };
-
-  const handleSelectChange = (name: keyof SalesOrder, value: string) => {
-    setCurrentOrder(prev => prev ? { ...prev, [name]: value } : {});
-  };
-  
-  const handleDateChange = (name: keyof SalesOrder, date?: Date) => {
-    setCurrentOrder(prev => prev ? { ...prev, [name]: date?.toISOString() } : {});
-  };
-
-  const handleCheckboxChange = (name: keyof SalesOrder, checked: boolean) => {
-    setCurrentOrder(prev => prev ? { ...prev, [name]: checked } : null);
-  };
-
-  const handleItemChange = (index: number, field: keyof SalesOrderItem, value: string | number) => {
-    setCurrentOrder(prev => {
-      if (!prev || !prev.items) return prev;
-      const newItems = [...prev.items];
-      if (field === 'productId') {
-        const selectedProduct = mockProductsForSale.find(p => p.id === value);
-        newItems[index] = {
-          ...newItems[index],
-          productId: value as string,
-          productName: selectedProduct?.name || '',
-          unitPrice: selectedProduct?.price || 0,
-        };
-      } else {
-         newItems[index] = { ...newItems[index], [field]: field === 'quantity' || field === 'unitPrice' ? Number(value) : value };
-      }
-      return { ...prev, items: newItems, totalAmount: calculateTotalAmount(newItems) };
-    });
-  };
-
-  const addItem = () => {
-    setCurrentOrder(prev => {
-      if (!prev) return prev;
-      const newItem: SalesOrderItem = { id: Date.now().toString(), productId: '', productName: '', quantity: 1, unitPrice: 0 };
-      const updatedItems = [...(prev.items || []), newItem];
-      return { ...prev, items: updatedItems, totalAmount: calculateTotalAmount(updatedItems) };
-    });
-  };
-
-  const removeItem = (itemIndex: number) => {
-    setCurrentOrder(prev => {
-      if (!prev || !prev.items) return prev;
-      const updatedItems = prev.items.filter((_, index) => index !== itemIndex);
-      return { ...prev, items: updatedItems, totalAmount: calculateTotalAmount(updatedItems) };
-    });
   };
 
   const filteredOrders = useMemo(() => {
@@ -193,10 +106,7 @@ export default function SalesOrdersPage() {
               className="pl-8"
             />
           </div>
-          <Button onClick={() => handleOpenModal()} variant="default" className="w-full sm:w-auto">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            {UI_TEXT.ADD_SALES_ORDER}
-          </Button>
+          {/* "Add Sales Order" button removed as per request */}
         </div>
         <div className="overflow-x-auto">
           <Table>
@@ -219,12 +129,10 @@ export default function SalesOrdersPage() {
                   <TableCell className="text-right">₡{order.totalAmount?.toFixed(0) || '0'}</TableCell>
                   <TableCell>{DOCUMENT_STATUS_OPTIONS[order.status.toUpperCase() as keyof typeof DOCUMENT_STATUS_OPTIONS]?.label || order.status}</TableCell>
                   <TableCell className="text-center">
-                    <Button variant="ghost" size="icon" onClick={() => handleOpenModal(order)} className="text-primary hover:text-primary/80">
-                      <Edit3 className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" onClick={() => handleOpenViewModal(order)} className="text-primary hover:text-primary/80">
+                      <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDeleteOrder(order.id)} className="text-destructive hover:text-destructive/80">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {/* Edit and Delete buttons removed */}
                   </TableCell>
                 </TableRow>
               ))}
@@ -236,104 +144,70 @@ export default function SalesOrdersPage() {
         )}
       </CardContent>
 
+      {/* View Dialog */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>{editingOrder ? UI_TEXT.EDIT_SALES_ORDER : UI_TEXT.ADD_SALES_ORDER}</DialogTitle>
+            <DialogTitle>{UI_TEXT.VIEW_SALES_ORDER}: {currentOrder?.documentNumber}</DialogTitle>
           </DialogHeader>
           <ScrollArea className="max-h-[calc(90vh-200px)] p-1">
             <div className="grid gap-4 py-4 pr-3">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="documentNumber">{UI_TEXT.DOCUMENT_NUMBER}</Label>
-                  <Input id="documentNumber" name="documentNumber" value={currentOrder?.documentNumber || ''} onChange={handleChange} />
+                  <Label htmlFor="view-documentNumber">{UI_TEXT.DOCUMENT_NUMBER}</Label>
+                  <Input id="view-documentNumber" value={currentOrder?.documentNumber || ''} readOnly disabled />
                 </div>
                 <div>
-                  <Label htmlFor="customerName">{UI_TEXT.CUSTOMER_NAME}</Label>
-                  <Input id="customerName" name="customerName" value={currentOrder?.customerName || ''} onChange={handleChange} />
+                  <Label htmlFor="view-customerName">{UI_TEXT.CUSTOMER_NAME}</Label>
+                  <Input id="view-customerName" value={currentOrder?.customerName || ''} readOnly disabled />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="branchId">{UI_TEXT.BRANCH_LABEL}</Label>
-                   <Select name="branchId" value={currentOrder?.branchId || ''} onValueChange={(value) => handleSelectChange('branchId', value)}>
-                    <SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
-                    <SelectContent>
-                      {mockBranches.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="view-branchId">{UI_TEXT.BRANCH_LABEL}</Label>
+                   <Input id="view-branchId" value={mockBranches.find(b => b.id === currentOrder?.branchId)?.name || currentOrder?.branchId || ''} readOnly disabled />
                 </div>
                  <div>
-                  <Label htmlFor="status">{UI_TEXT.STATUS}</Label>
-                  <Select name="status" value={currentOrder?.status || ''} onValueChange={(value) => handleSelectChange('status', value)}>
-                    <SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
-                    <SelectContent>
-                       {Object.values(DOCUMENT_STATUS_OPTIONS)
-                        .filter(s => ['draft', 'confirmed', 'completed', 'cancelled'].includes(s.value))
-                        .map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="view-status">{UI_TEXT.STATUS}</Label>
+                  <Input id="view-status" value={DOCUMENT_STATUS_OPTIONS[currentOrder?.status?.toUpperCase() as keyof typeof DOCUMENT_STATUS_OPTIONS]?.label || currentOrder?.status || ''} readOnly disabled />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="orderDate">{UI_TEXT.ORDER_DATE}</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant={"outline"} className="w-full justify-start text-left font-normal">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {currentOrder?.orderDate ? format(new Date(currentOrder.orderDate), "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar mode="single" selected={currentOrder?.orderDate ? new Date(currentOrder.orderDate) : undefined} onSelect={(date) => handleDateChange('orderDate', date)} initialFocus />
-                    </PopoverContent>
-                  </Popover>
+                  <Label htmlFor="view-orderDate">{UI_TEXT.ORDER_DATE}</Label>
+                   <Input id="view-orderDate" value={currentOrder?.orderDate ? format(new Date(currentOrder.orderDate), "PPP", { locale: es }) : ''} readOnly disabled />
                 </div>
                  <div>
-                  <Label htmlFor="paymentMethod">{UI_TEXT.PAYMENT_METHOD}</Label>
-                  <Input id="paymentMethod" name="paymentMethod" value={currentOrder?.paymentMethod || ''} onChange={handleChange} placeholder="Ej: Efectivo, Tarjeta"/>
+                  <Label htmlFor="view-paymentMethod">{UI_TEXT.PAYMENT_METHOD}</Label>
+                  <Input id="view-paymentMethod" value={currentOrder?.paymentMethod || ''} readOnly disabled/>
                 </div>
               </div>
                <div className="flex items-center space-x-2 mt-2">
-                <Checkbox id="requiresOpenCashRegister" checked={currentOrder?.requiresOpenCashRegister || false} onCheckedChange={(checked) => handleCheckboxChange('requiresOpenCashRegister', !!checked)} disabled />
-                <Label htmlFor="requiresOpenCashRegister" className="text-sm text-muted-foreground">{UI_TEXT.CASH_REGISTER_OPEN_REQUIRED}</Label>
+                <Checkbox id="view-requiresOpenCashRegister" checked={currentOrder?.requiresOpenCashRegister || false} disabled />
+                <Label htmlFor="view-requiresOpenCashRegister" className="text-sm text-muted-foreground">{UI_TEXT.CASH_REGISTER_OPEN_REQUIRED}</Label>
               </div>
               
               {/* Items Section */}
               <div className="col-span-full space-y-2 mt-4">
-                <div className="flex justify-between items-center">
-                  <Label className="text-lg font-semibold">{UI_TEXT.ITEMS}</Label>
-                  <Button type="button" variant="outline" size="sm" onClick={addItem}><PackagePlus className="mr-2 h-4 w-4" /> {UI_TEXT.ADD_ITEM}</Button>
-                </div>
+                <Label className="text-lg font-semibold">{UI_TEXT.ITEMS}</Label>
                 {currentOrder?.items?.map((item, index) => (
                   <Card key={item.id} className="p-3 bg-secondary/30">
                     <div className="grid grid-cols-12 gap-2 items-end">
-                      <div className="col-span-4">
-                        <Label htmlFor={`item-prod-id-${index}`} className="text-xs">{UI_TEXT.ITEM_NAME}</Label>
-                        <Select value={item.productId} onValueChange={(value) => handleItemChange(index, 'productId', value)}>
-                          <SelectTrigger id={`item-prod-id-${index}`}><SelectValue placeholder="Seleccionar..."/></SelectTrigger>
-                          <SelectContent>
-                            {mockProductsForSale.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                      <div className="col-span-5"> 
+                        <Label className="text-xs">{UI_TEXT.ITEM_NAME}</Label>
+                        <Input value={item.productName} readOnly disabled />
                       </div>
                       <div className="col-span-2">
-                        <Label htmlFor={`item-qty-${index}`} className="text-xs">{UI_TEXT.QUANTITY}</Label>
-                        <Input id={`item-qty-${index}`} type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value))} />
+                        <Label className="text-xs">{UI_TEXT.QUANTITY}</Label>
+                        <Input type="number" value={item.quantity} readOnly disabled />
                       </div>
                       <div className="col-span-2">
-                        <Label htmlFor={`item-unit_price-${index}`} className="text-xs">{UI_TEXT.UNIT_PRICE}</Label>
-                        <Input id={`item-unit_price-${index}`} type="number" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value))} disabled={!!item.productId} />
+                        <Label className="text-xs">{UI_TEXT.UNIT_PRICE}</Label>
+                        <Input type="number" value={item.unitPrice} readOnly disabled />
                       </div>
                        <div className="col-span-3">
                         <Label className="text-xs">Total</Label>
                         <Input type="text" value={`₡${(item.quantity * item.unitPrice).toFixed(0)}`} readOnly disabled className="bg-muted/50"/>
-                      </div>
-                      <div className="col-span-1">
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(index)} className="text-destructive hover:text-destructive/80">
-                          <PackageMinus className="h-4 w-4" />
-                        </Button>
                       </div>
                     </div>
                   </Card>
@@ -345,19 +219,16 @@ export default function SalesOrdersPage() {
                 <span className="text-xl font-bold text-primary">₡{calculateTotalAmount(currentOrder?.items).toFixed(0)}</span>
               </div>
               <div>
-                <Label htmlFor="notes">{UI_TEXT.NOTES}</Label>
-                <Textarea id="notes" name="notes" value={currentOrder?.notes || ''} onChange={handleChange} rows={3} />
+                <Label htmlFor="view-notes">{UI_TEXT.NOTES}</Label>
+                <Textarea id="view-notes" value={currentOrder?.notes || ''} readOnly disabled rows={3} />
               </div>
             </div>
           </ScrollArea>
           <DialogFooter className="pt-4 border-t">
             <Button variant="outline" onClick={handleCloseModal}>{UI_TEXT.CANCEL}</Button>
-            <Button type="submit" onClick={handleSaveOrder}>{UI_TEXT.SAVE_CHANGES}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </Card>
   );
 }
-
-    

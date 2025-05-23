@@ -1,4 +1,5 @@
 
+
 export interface Product {
   id: string;
   name: string;
@@ -6,6 +7,7 @@ export interface Product {
   imageUrl: string;
   category: string;
   aiHint: string; // For placeholder image search
+  recipeId?: string; // Added to link product to a recipe
 }
 
 export interface CartItem extends Product {

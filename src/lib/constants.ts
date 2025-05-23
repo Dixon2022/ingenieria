@@ -1,5 +1,4 @@
 
-
 export const APP_NAME = "AmorPOS";
 export const BAKERY_NAME = "Panadería Amores";
 
@@ -53,7 +52,7 @@ export const UI_TEXT = {
   ACTIONS: "Acciones",
   UPDATE_STOCK: "Actualizar",
   MIN_STOCK: "Stock Mínimo",
-  SALES_DATA_LABEL: "Datos de Ventas (JSON)", // Kept for reference, but page will change
+  SALES_DATA_LABEL: "Datos de Ventas (JSON)", 
   SALES_DATA_PLACEHOLDER: `{
   "ventas": [
     {"item": "Concha de Vainilla", "cantidadVendida": 50},
@@ -63,7 +62,7 @@ export const UI_TEXT = {
     {"item": "Concha de Vainilla", "stock": 20},
     {"item": "Bolillo", "stock": 10}
   ]
-}`, // Kept for reference
+}`, 
   ANALYZE_SALES: "Analizar Ventas",
   ANALYSIS_RESULTS: "Resultados del Análisis",
   ITEMS_TO_ADJUST: "Artículos para Ajustar Inventario",
@@ -102,13 +101,16 @@ export const UI_TEXT = {
   },
   VIEW_DETAILS: "Ver detalles",
   INVENTORY_ADVICE: "Consejos de Inventario por IA",
-  SALES_REPORT_DESCRIPTION: "Seleccione filtros para generar un análisis de ventas y recomendaciones de inventario.", // Updated
+  SALES_REPORT_DESCRIPTION: "Seleccione filtros para generar un análisis de ventas y recomendaciones de inventario.", 
   REPORTS_FILTER_TITLE: "Filtros para el Reporte",
   START_DATE: "Fecha de Inicio",
   END_DATE: "Fecha de Fin",
   SELECT_BRANCH: "Seleccionar Sucursal",
   ALL_BRANCHES: "Todas las Sucursales",
   GENERATE_REPORT: "Generar Reporte",
+  NO_ITEMS_TO_ADJUST_SUGGESTED: "No se sugieren ajustes de inventario para los filtros seleccionados.",
+  ANALYSIS_DATA_UNAVAILABLE: "Información del análisis no disponible o incompleta.",
+  NO_REASONING_PROVIDED: "Justificación no proporcionada por el análisis.",
   
   ADD_BRANCH: "Agregar Sucursal",
   EDIT_BRANCH: "Editar Sucursal",
@@ -329,6 +331,7 @@ export const mockSalesOrdersForReports: import('@/types').SalesOrder[] = [
     status: 'completed',
     totalAmount: 25000, // 10*1500 + 20*500 = 15000 + 10000
     customerName: 'Cliente Ejemplo Uno',
+    paymentMethod: 'Efectivo',
     aiHint: 'sales receipt document'
   },
   { 
@@ -343,6 +346,7 @@ export const mockSalesOrdersForReports: import('@/types').SalesOrder[] = [
     status: 'completed',
     totalAmount: 29100, // 5*1500 + 12*1800 = 7500 + 21600
     customerName: 'Cliente Ejemplo Dos',
+    paymentMethod: 'Tarjeta',
     aiHint: 'sales receipt document'
   },
     { 
@@ -356,8 +360,7 @@ export const mockSalesOrdersForReports: import('@/types').SalesOrder[] = [
     status: 'completed',
     totalAmount: 30000,
     customerName: 'Cliente Ejemplo Tres',
+    paymentMethod: 'SINPE',
     aiHint: 'sales receipt document'
   },
 ];
-
-    

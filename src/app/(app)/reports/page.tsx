@@ -10,7 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { UI_TEXT, mockBranches, mockSalesOrdersForReports } from '@/lib/constants';
 import type { SalesOrder } from '@/types';
 import { analyzeSalesReport, AnalyzeSalesReportOutput } from '@/ai/flows/sales-report-analyzer';
-import { AlertCircle, CheckCircle, Loader2, Lightbulb, CalendarIcon as CalendarDateIcon, Filter } from 'lucide-react'; // Renamed CalendarIcon to avoid conflict
+import { AlertCircle, CheckCircle, Loader2, Lightbulb, CalendarIcon as CalendarDateIcon, Filter } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, isValid, parseISO } from "date-fns";
@@ -41,6 +41,8 @@ export default function ReportsPage() {
       setIsLoading(false);
       return;
     }
+    const adjustedEndDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999);
+
 
     try {
       // Simulate fetching all sales orders
@@ -53,7 +55,7 @@ export default function ReportsPage() {
         if (!isValid(orderDate)) return false;
 
         const isAfterStartDate = orderDate >= startDate;
-        const isBeforeEndDate = orderDate <= new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999); // Include full end day
+        const isBeforeEndDate = orderDate <= adjustedEndDate; 
         const isCorrectBranch = selectedBranchId ? order.branchId === selectedBranchId : true;
         
         return isAfterStartDate && isBeforeEndDate && isCorrectBranch;
@@ -179,20 +181,36 @@ export default function ReportsPage() {
           <CardContent className="space-y-4">
             <div>
               <h3 className="text-lg font-semibold mb-2">{UI_TEXT.ITEMS_TO_ADJUST}:</h3>
-              {analysisResult.itemsToAdjust.length > 0 ? (
-                <ul className="list-disc list-inside bg-secondary/30 p-3 rounded-md">
-                  {analysisResult.itemsToAdjust.map((item, index) => (
-                    <li key={index} className="text-foreground">{item}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground">{UI_TEXT.NO_DATA}</p>
-              )}
+              {(() => {
+                if (analysisResult.itemsToAdjust && Array.isArray(analysisResult.itemsToAdjust)) {
+                  if (analysisResult.itemsToAdjust.length > 0) {
+                    return (
+                      <ul className="list-disc list-inside bg-secondary/30 p-3 rounded-md">
+                        {analysisResult.itemsToAdjust.map((item, index) => (
+                          <li key={`${item}-${index}`} className="text-foreground">{item}</li>
+                        ))}
+                      </ul>
+                    );
+                  } else { // Empty array
+                    return <p className="text-muted-foreground">{UI_TEXT.NO_ITEMS_TO_ADJUST_SUGGESTED}</p>;
+                  }
+                } else { // Undefined or not an array
+                  return <p className="text-muted-foreground">{UI_TEXT.ANALYSIS_DATA_UNAVAILABLE}</p>;
+                }
+              })()}
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">{UI_TEXT.REASONING}:</h3>
               <ScrollArea className="h-40 w-full rounded-md border p-3 bg-secondary/30">
-                <p className="text-sm whitespace-pre-wrap text-foreground">{analysisResult.reasoning}</p>
+                {typeof analysisResult.reasoning === 'string' && analysisResult.reasoning.trim() !== '' ? (
+                  <p className="text-sm whitespace-pre-wrap text-foreground">{analysisResult.reasoning}</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {typeof analysisResult.reasoning === 'string' 
+                      ? UI_TEXT.NO_REASONING_PROVIDED 
+                      : UI_TEXT.ANALYSIS_DATA_UNAVAILABLE}
+                  </p>
+                )}
               </ScrollArea>
             </div>
           </CardContent>
@@ -204,6 +222,3 @@ export default function ReportsPage() {
     </div>
   );
 }
-
-
-    

@@ -209,7 +209,7 @@ export default function InventoryAdjustmentsPage() {
                   <TableCell>{ADJUSTMENT_TYPE_OPTIONS[adj.adjustmentType.toUpperCase() as keyof typeof ADJUSTMENT_TYPE_OPTIONS]?.label || adj.adjustmentType}</TableCell>
                   <TableCell>{mockBranches.find(b => b.id === adj.branchId)?.name || adj.branchId}</TableCell>
                   <TableCell>{DOCUMENT_STATUS_OPTIONS[adj.status.toUpperCase() as keyof typeof DOCUMENT_STATUS_OPTIONS]?.label || adj.status}</TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center whitespace-nowrap">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(adj)} className="text-primary hover:text-primary/80">
                       <Edit3 className="h-4 w-4" />
                     </Button>
@@ -234,7 +234,7 @@ export default function InventoryAdjustmentsPage() {
           </DialogHeader>
           <ScrollArea className="max-h-[calc(90vh-200px)] p-1">
             <div className="grid gap-4 py-4 pr-3">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="documentNumber">{UI_TEXT.DOCUMENT_NUMBER}</Label>
                   <Input id="documentNumber" name="documentNumber" value={currentAdjustment?.documentNumber || ''} onChange={handleChange} />
@@ -254,7 +254,7 @@ export default function InventoryAdjustmentsPage() {
                   </Popover>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="branchId">{UI_TEXT.BRANCH_LABEL}</Label>
                    <Select name="branchId" value={currentAdjustment?.branchId || ''} onValueChange={(value) => handleSelectChange('branchId', value)}>
@@ -274,7 +274,7 @@ export default function InventoryAdjustmentsPage() {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="status">{UI_TEXT.STATUS}</Label>
                   <Select name="status" value={currentAdjustment?.status || ''} onValueChange={(value) => handleSelectChange('status', value)}>
@@ -300,8 +300,8 @@ export default function InventoryAdjustmentsPage() {
                 </div>
                 {currentAdjustment?.items?.map((item, index) => (
                   <Card key={item.id} className="p-3 bg-secondary/30">
-                    <div className="grid grid-cols-12 gap-2 items-start">
-                      <div className="col-span-4"> 
+                     <div className="grid grid-cols-1 gap-y-2 sm:grid-cols-12 sm:gap-x-2 sm:items-start">
+                      <div className="sm:col-span-4"> 
                         <Label htmlFor={`item-id-${index}`} className="text-xs">{UI_TEXT.ITEM_NAME}</Label>
                         <Select value={item.itemId} onValueChange={(value) => handleItemChange(index, 'itemId', value)}>
                           <SelectTrigger id={`item-id-${index}`}><SelectValue placeholder="Seleccionar..."/></SelectTrigger>
@@ -310,15 +310,15 @@ export default function InventoryAdjustmentsPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-2">
+                      <div className="sm:col-span-2">
                         <Label htmlFor={`item-qty-${index}`} className="text-xs">{UI_TEXT.QUANTITY_ADJUSTED}</Label>
                         <Input id={`item-qty-${index}`} type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value))} />
                       </div>
-                      <div className="col-span-5">
+                      <div className="sm:col-span-5">
                         <Label htmlFor={`item-reason-${index}`} className="text-xs">{UI_TEXT.REASON_PER_ITEM} (Opcional)</Label>
                         <Input id={`item-reason-${index}`} value={item.reasonPerItem || ''} onChange={(e) => handleItemChange(index, 'reasonPerItem', e.target.value)} />
                       </div>
-                      <div className="col-span-1 self-end">
+                      <div className="sm:col-span-1 flex justify-end sm:self-end">
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(index)} className="text-destructive hover:text-destructive/80">
                           <PackageMinus className="h-4 w-4" />
                         </Button>

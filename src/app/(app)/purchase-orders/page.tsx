@@ -223,7 +223,7 @@ export default function PurchaseOrdersPage() {
                   <TableCell>{format(new Date(order.orderDate), "PPP", { locale: es })}</TableCell>
                   <TableCell className="text-right">₡{order.totalAmount?.toFixed(0) || '0'}</TableCell>
                   <TableCell>{DOCUMENT_STATUS_OPTIONS[order.status.toUpperCase() as keyof typeof DOCUMENT_STATUS_OPTIONS]?.label || order.status}</TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center whitespace-nowrap">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(order)} className="text-primary hover:text-primary/80">
                       <Edit3 className="h-4 w-4" />
                     </Button>
@@ -248,7 +248,7 @@ export default function PurchaseOrdersPage() {
           </DialogHeader>
           <ScrollArea className="max-h-[calc(90vh-200px)] p-1">
             <div className="grid gap-4 py-4 pr-3">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="documentNumber">{UI_TEXT.DOCUMENT_NUMBER}</Label>
                   <Input id="documentNumber" name="documentNumber" value={currentOrder?.documentNumber || ''} onChange={handleChange} />
@@ -263,7 +263,7 @@ export default function PurchaseOrdersPage() {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="branchId">{UI_TEXT.BRANCH_LABEL}</Label>
                    <Select name="branchId" value={currentOrder?.branchId || ''} onValueChange={(value) => handleSelectChange('branchId', value)}>
@@ -285,7 +285,7 @@ export default function PurchaseOrdersPage() {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="orderDate">{UI_TEXT.ORDER_DATE}</Label>
                   <Popover>
@@ -324,8 +324,8 @@ export default function PurchaseOrdersPage() {
                 </div>
                 {currentOrder?.items?.map((item, index) => (
                   <Card key={item.id} className="p-3 bg-secondary/30">
-                    <div className="grid grid-cols-12 gap-2 items-end">
-                      <div className="col-span-4"> {/* Item Selection */}
+                    <div className="grid grid-cols-1 gap-y-2 sm:grid-cols-12 sm:gap-x-2 sm:items-end">
+                      <div className="sm:col-span-4"> 
                         <Label htmlFor={`item-id-${index}`} className="text-xs">{UI_TEXT.ITEM_NAME}</Label>
                         <Select value={item.itemId} onValueChange={(value) => handleItemChange(index, 'itemId', value)}>
                           <SelectTrigger id={`item-id-${index}`}><SelectValue placeholder="Seleccionar..."/></SelectTrigger>
@@ -334,19 +334,19 @@ export default function PurchaseOrdersPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-2">
+                      <div className="sm:col-span-2">
                         <Label htmlFor={`item-qty-${index}`} className="text-xs">{UI_TEXT.QUANTITY}</Label>
                         <Input id={`item-qty-${index}`} type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value))} />
                       </div>
-                      <div className="col-span-2">
+                      <div className="sm:col-span-2">
                         <Label htmlFor={`item-unit_price-${index}`} className="text-xs">{UI_TEXT.UNIT_PRICE}</Label>
                         <Input id={`item-unit_price-${index}`} type="number" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value))} />
                       </div>
-                       <div className="col-span-3">
+                       <div className="sm:col-span-3">
                         <Label className="text-xs">Total</Label>
                         <Input type="text" value={`₡${(item.quantity * item.unitPrice).toFixed(0)}`} readOnly disabled className="bg-muted/50"/>
                       </div>
-                      <div className="col-span-1">
+                      <div className="sm:col-span-1 flex justify-end sm:self-end">
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(index)} className="text-destructive hover:text-destructive/80">
                           <PackageMinus className="h-4 w-4" />
                         </Button>

@@ -1,4 +1,5 @@
 
+
 "use client";
 import { useState, type ReactNode, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -66,7 +67,7 @@ function ProductCard({ product, onAddToCart, onViewRecipe }: { product: Product;
           {product.category}
         </p>
       </CardContent>
-      <CardFooter className="p-3 border-t grid grid-cols-2 gap-2">
+      <CardFooter className="p-3 border-t flex flex-col gap-2 sm:flex-row">
         <Button onClick={() => onAddToCart(product)} className="w-full" variant="default" size="sm">
           <ShoppingCart className="mr-2 h-4 w-4" />
           {UI_TEXT.ADD_TO_CART}
@@ -307,7 +308,7 @@ export default function POSPage() {
                 <span>{UI_TEXT.TOTAL}:</span>
                 <span>₡{total.toFixed(0)}</span>
               </div>
-              <div className="flex gap-2 w-full">
+              <div className="flex flex-col sm:flex-row gap-2 w-full">
                 <Button onClick={handleOpenCheckoutModal} className="flex-1" size="lg">
                   <CheckCircle className="mr-2 h-5 w-5" />
                   {UI_TEXT.CHECKOUT} (₡{total.toFixed(0)})
@@ -445,3 +446,4 @@ export default function POSPage() {
     </>
   );
 }
+

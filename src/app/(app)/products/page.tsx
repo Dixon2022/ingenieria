@@ -152,16 +152,16 @@ export default function ProductsPage() {
               {filteredProducts.map(product => (
                 <TableRow key={product.id}>
                   <TableCell className="hidden sm:table-cell">
-                    <Image src={product.imageUrl || `https://placehold.co/40x40.png?text=${product.name.substring(0,1)}`} alt={product.name} width={40} height={40} className="rounded-md object-cover" data-ai-hint={product.aiHint || 'product item'} />
+                    <Image src={product.imageUrl || `https://placehold.co/40x40.png?text=${product.name.substring(0,1)}`} alt={product.name} width={40} height={40} className="rounded-md object-cover flex-shrink-0" data-ai-hint={product.aiHint || 'product item'} />
                   </TableCell>
-                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell className="font-medium truncate">{product.name}</TableCell>
                   <TableCell>{UI_TEXT.PRODUCT_TYPES_LABELS[product.productType]}</TableCell>
                   <TableCell>{product.category}</TableCell>
                   <TableCell className="text-right">{product.price !== undefined ? `₡${product.price.toFixed(0)}` : '-'}</TableCell>
                   <TableCell className="text-right">{product.cost !== undefined ? `₡${product.cost.toFixed(0)}` : '-'}</TableCell>
                   <TableCell className="text-right">{product.stock}</TableCell>
                   <TableCell>{product.unit}</TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center whitespace-nowrap">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(product)} className="text-primary hover:text-primary/80">
                       <Edit3 className="h-4 w-4" />
                     </Button>
@@ -188,14 +188,14 @@ export default function ProductsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right col-span-1">Nombre</Label>
-              <Input id="name" name="name" value={currentProduct?.name || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="name" className="sm:text-right sm:col-span-1">Nombre</Label>
+              <Input id="name" name="name" value={currentProduct?.name || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="productType" className="text-right col-span-1">{UI_TEXT.PRODUCT_TYPE}</Label>
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="productType" className="sm:text-right sm:col-span-1">{UI_TEXT.PRODUCT_TYPE}</Label>
               <Select name="productType" value={currentProduct?.productType || ''} onValueChange={(value) => handleSelectChange('productType', value as ProductType)}>
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="sm:col-span-3">
                   <SelectValue placeholder={`Seleccione ${UI_TEXT.PRODUCT_TYPE.toLowerCase()}`} />
                 </SelectTrigger>
                 <SelectContent>
@@ -205,10 +205,10 @@ export default function ProductsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="category" className="text-right col-span-1">{UI_TEXT.CATEGORY}</Label>
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="category" className="sm:text-right sm:col-span-1">{UI_TEXT.CATEGORY}</Label>
               <Select name="category" value={currentProduct?.category || ''} onValueChange={(value) => handleSelectChange('category', value)}>
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="sm:col-span-3">
                   <SelectValue placeholder={`Seleccione ${UI_TEXT.CATEGORY.toLowerCase()}`} />
                 </SelectTrigger>
                 <SelectContent>
@@ -218,10 +218,10 @@ export default function ProductsPage() {
                 </SelectContent>
               </Select>
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="unit" className="text-right col-span-1">{UI_TEXT.UNIT}</Label>
+             <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="unit" className="sm:text-right sm:col-span-1">{UI_TEXT.UNIT}</Label>
               <Select name="unit" value={currentProduct?.unit || ''} onValueChange={(value) => handleSelectChange('unit', value)}>
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="sm:col-span-3">
                   <SelectValue placeholder={`Seleccione ${UI_TEXT.UNIT.toLowerCase()}`} />
                 </SelectTrigger>
                 <SelectContent>
@@ -233,52 +233,52 @@ export default function ProductsPage() {
             </div>
 
             { (currentProduct.productType === 'third_party_sale' || currentProduct.productType === 'produced_item') && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="price" className="text-right col-span-1">{UI_TEXT.PRICE}</Label>
-                <Input id="price" name="price" type="number" value={currentProduct?.price || ''} onChange={handleChange} className="col-span-3" placeholder="0" />
+              <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+                <Label htmlFor="price" className="sm:text-right sm:col-span-1">{UI_TEXT.PRICE}</Label>
+                <Input id="price" name="price" type="number" value={currentProduct?.price || ''} onChange={handleChange} className="sm:col-span-3" placeholder="0" />
               </div>
             )}
 
             { (currentProduct.productType === 'third_party_sale' || currentProduct.productType === 'third_party_production') && (
               <>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="cost" className="text-right col-span-1">{UI_TEXT.COST}</Label>
-                  <Input id="cost" name="cost" type="number" value={currentProduct?.cost || ''} onChange={handleChange} className="col-span-3" placeholder="0" />
+                <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+                  <Label htmlFor="cost" className="sm:text-right sm:col-span-1">{UI_TEXT.COST}</Label>
+                  <Input id="cost" name="cost" type="number" value={currentProduct?.cost || ''} onChange={handleChange} className="sm:col-span-3" placeholder="0" />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="supplierId" className="text-right col-span-1">{UI_TEXT.SUPPLIER}</Label>
+                <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+                  <Label htmlFor="supplierId" className="sm:text-right sm:col-span-1">{UI_TEXT.SUPPLIER}</Label>
                   {/* TODO: Replace with a Select populated by actual suppliers */}
-                  <Input id="supplierId" name="supplierId" value={currentProduct?.supplierId || ''} onChange={handleChange} className="col-span-3" placeholder="ID de Proveedor (ej: s1)" />
+                  <Input id="supplierId" name="supplierId" value={currentProduct?.supplierId || ''} onChange={handleChange} className="sm:col-span-3" placeholder="ID de Proveedor (ej: s1)" />
                 </div>
               </>
             )}
             
             {currentProduct.productType === 'produced_item' && (
-               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="recipeId" className="text-right col-span-1">{UI_TEXT.RECIPE}</Label>
+               <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+                <Label htmlFor="recipeId" className="sm:text-right sm:col-span-1">{UI_TEXT.RECIPE}</Label>
                  {/* TODO: Replace with a Select populated by actual recipes */}
-                <Input id="recipeId" name="recipeId" value={currentProduct?.recipeId || ''} onChange={handleChange} className="col-span-3" placeholder="ID de Receta (ej: r1)"/>
+                <Input id="recipeId" name="recipeId" value={currentProduct?.recipeId || ''} onChange={handleChange} className="sm:col-span-3" placeholder="ID de Receta (ej: r1)"/>
               </div>
             )}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="stock" className="text-right col-span-1">{UI_TEXT.STOCK}</Label>
-              <Input id="stock" name="stock" type="number" value={currentProduct?.stock || 0} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="stock" className="sm:text-right sm:col-span-1">{UI_TEXT.STOCK}</Label>
+              <Input id="stock" name="stock" type="number" value={currentProduct?.stock || 0} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="minStockLevel" className="text-right col-span-1">{UI_TEXT.MIN_STOCK}</Label>
-              <Input id="minStockLevel" name="minStockLevel" type="number" value={currentProduct?.minStockLevel || 0} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="minStockLevel" className="sm:text-right sm:col-span-1">{UI_TEXT.MIN_STOCK}</Label>
+              <Input id="minStockLevel" name="minStockLevel" type="number" value={currentProduct?.minStockLevel || 0} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="description" className="text-right col-span-1 pt-2">{UI_TEXT.DESCRIPTION}</Label>
-              <Textarea id="description" name="description" value={currentProduct?.description || ''} onChange={handleChange} className="col-span-3" rows={3} />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-start sm:gap-x-4">
+              <Label htmlFor="description" className="sm:text-right sm:col-span-1 sm:pt-2">{UI_TEXT.DESCRIPTION}</Label>
+              <Textarea id="description" name="description" value={currentProduct?.description || ''} onChange={handleChange} className="sm:col-span-3" rows={3} />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="imageUrl" className="text-right col-span-1">URL de Imagen</Label>
-              <Input id="imageUrl" name="imageUrl" value={currentProduct?.imageUrl || ''} onChange={handleChange} className="col-span-3" placeholder="https://placehold.co/40x40.png"/>
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="imageUrl" className="sm:text-right sm:col-span-1">URL de Imagen</Label>
+              <Input id="imageUrl" name="imageUrl" value={currentProduct?.imageUrl || ''} onChange={handleChange} className="sm:col-span-3" placeholder="https://placehold.co/40x40.png"/>
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="aiHint" className="text-right col-span-1">AI Hint (imagen)</Label>
-              <Input id="aiHint" name="aiHint" value={currentProduct?.aiHint || ''} onChange={handleChange} className="col-span-3" placeholder="ej: pan dulce"/>
+             <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="aiHint" className="sm:text-right sm:col-span-1">AI Hint (imagen)</Label>
+              <Input id="aiHint" name="aiHint" value={currentProduct?.aiHint || ''} onChange={handleChange} className="sm:col-span-3" placeholder="ej: pan dulce"/>
             </div>
           </div>
           <DialogFooter>

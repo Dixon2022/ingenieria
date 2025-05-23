@@ -133,7 +133,7 @@ export default function UsersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[80px] hidden sm:table-cell">Usuario</TableHead>
+                <TableHead className="min-w-[150px] hidden sm:table-cell">Usuario</TableHead>
                 <TableHead>{UI_TEXT.IDENTIFICATION}</TableHead>
                 <TableHead>{UI_TEXT.FIRST_NAME}</TableHead>
                 <TableHead>{UI_TEXT.LAST_NAME}</TableHead>
@@ -147,8 +147,8 @@ export default function UsersPage() {
                 <TableRow key={user.id}>
                   <TableCell className="hidden sm:table-cell">
                      <div className="flex items-center gap-2">
-                        <Image src={user.avatarUrl || `https://placehold.co/40x40.png?text=${user.firstName.charAt(0)}`} alt={user.username} width={40} height={40} className="rounded-full object-cover" data-ai-hint={user.aiHint || 'person avatar'} />
-                        <span className="font-medium">{user.username}</span>
+                        <Image src={user.avatarUrl || `https://placehold.co/40x40.png?text=${user.firstName.charAt(0)}`} alt={user.username} width={40} height={40} className="rounded-full object-cover flex-shrink-0" data-ai-hint={user.aiHint || 'person avatar'} />
+                        <span className="font-medium truncate">{user.username}</span>
                      </div>
                   </TableCell>
                   <TableCell>{user.identification}</TableCell>
@@ -164,7 +164,7 @@ export default function UsersPage() {
                       {user.isBlocked ? UI_TEXT.USER_STATE_BLOCKED : UI_TEXT.USER_STATE_ACTIVE}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center whitespace-nowrap">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(user)} className="text-primary hover:text-primary/80">
                       <Edit3 className="h-4 w-4" />
                     </Button>
@@ -191,36 +191,36 @@ export default function UsersPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="identification" className="text-right">{UI_TEXT.IDENTIFICATION}</Label>
-              <Input id="identification" name="identification" value={currentUser?.identification || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="identification" className="sm:text-right sm:col-span-1">{UI_TEXT.IDENTIFICATION}</Label>
+              <Input id="identification" name="identification" value={currentUser?.identification || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="username" className="text-right">{UI_TEXT.USERNAME}</Label>
-              <Input id="username" name="username" value={currentUser?.username || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="username" className="sm:text-right sm:col-span-1">{UI_TEXT.USERNAME}</Label>
+              <Input id="username" name="username" value={currentUser?.username || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="firstName" className="text-right">{UI_TEXT.FIRST_NAME}</Label>
-              <Input id="firstName" name="firstName" value={currentUser?.firstName || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="firstName" className="sm:text-right sm:col-span-1">{UI_TEXT.FIRST_NAME}</Label>
+              <Input id="firstName" name="firstName" value={currentUser?.firstName || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="lastName" className="text-right">{UI_TEXT.LAST_NAME}</Label>
-              <Input id="lastName" name="lastName" value={currentUser?.lastName || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="lastName" className="sm:text-right sm:col-span-1">{UI_TEXT.LAST_NAME}</Label>
+              <Input id="lastName" name="lastName" value={currentUser?.lastName || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
              {/* Password field could be added here, typically handled separately for security */}
-            <div className="grid grid-cols-4 items-center gap-4">
-               <Label htmlFor="isBlocked" className="text-right">{UI_TEXT.STATUS}</Label>
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+               <Label htmlFor="isBlocked" className="sm:text-right sm:col-span-1">{UI_TEXT.STATUS}</Label>
                <Checkbox
                 id="isBlocked"
                 name="isBlocked"
                 checked={currentUser?.isBlocked || false}
                 onCheckedChange={(checked) => setCurrentUser(prev => prev ? { ...prev, isBlocked: !!checked } : null)}
-                className="col-span-3 justify-self-start"
+                className="sm:col-span-3 justify-self-start"
               />
             </div>
-             <div className="col-span-4">
+             <div className="col-span-full sm:col-span-4">
               <Label className="text-sm font-medium">{UI_TEXT.ASSIGN_ROLES}</Label>
-              <div className="mt-2 grid grid-cols-2 gap-2 rounded-md border p-3">
+              <div className="mt-2 grid grid-cols-1 xs:grid-cols-2 gap-2 rounded-md border p-3">
                 {allRoles.map(role => (
                   <div key={role} className="flex items-center space-x-2">
                     <Checkbox

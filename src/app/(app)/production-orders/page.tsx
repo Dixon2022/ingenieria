@@ -277,7 +277,7 @@ export default function ProductionOrdersPage() {
                   <TableCell className="text-right">{order.quantityToProduce} {order.unitProduced}</TableCell>
                   <TableCell>{format(new Date(order.plannedStartDate), "PPP", { locale: es })}</TableCell>
                   <TableCell>{DOCUMENT_STATUS_OPTIONS[order.status.toUpperCase() as keyof typeof DOCUMENT_STATUS_OPTIONS]?.label || order.status}</TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center whitespace-nowrap">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(order)} className="text-primary hover:text-primary/80">
                       <Edit3 className="h-4 w-4" />
                     </Button>
@@ -302,7 +302,7 @@ export default function ProductionOrdersPage() {
           </DialogHeader>
           <ScrollArea className="max-h-[calc(90vh-200px)] p-1">
             <div className="grid gap-4 py-4 pr-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="documentNumber">{UI_TEXT.DOCUMENT_NUMBER}</Label>
                   <Input id="documentNumber" name="documentNumber" value={currentOrder?.documentNumber || ''} onChange={handleChange} />
@@ -317,7 +317,7 @@ export default function ProductionOrdersPage() {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="recipeId">{UI_TEXT.RECIPE}</Label>
                   <Select name="recipeId" value={currentOrder?.recipeId || ''} onValueChange={(value) => handleSelectChange('recipeId', value)}>
@@ -332,7 +332,7 @@ export default function ProductionOrdersPage() {
                   <Input id="productIdProduced" name="productNameProduced" value={currentOrder?.productNameProduced || ''} readOnly disabled />
                 </div>
               </div>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                  <div>
                   <Label htmlFor="quantityToProduce">{UI_TEXT.QUANTITY_TO_PRODUCE}</Label>
                   <Input id="quantityToProduce" name="quantityToProduce" type="number" value={currentOrder?.quantityToProduce || ''} onChange={handleChange} />
@@ -342,7 +342,7 @@ export default function ProductionOrdersPage() {
                   <Input id="unitProduced" name="unitProduced" value={currentOrder?.unitProduced || ''} readOnly disabled />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="plannedStartDate">{UI_TEXT.PLANNED_START_DATE}</Label>
                   <Popover>
@@ -411,7 +411,7 @@ export default function ProductionOrdersPage() {
                 </div>
                 {(!currentOrder?.consumedItems || currentOrder.consumedItems.length === 0) && <p className="text-xs text-muted-foreground text-center py-2">Seleccione una receta para ver los insumos.</p>}
               </div>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                  <div>
                     <Label htmlFor="actualYield">{UI_TEXT.ACTUAL_YIELD} (Opcional)</Label>
                     <Input id="actualYield" name="actualYield" type="number" value={currentOrder?.actualYield || ''} onChange={handleChange} />

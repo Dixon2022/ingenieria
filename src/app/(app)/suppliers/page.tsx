@@ -131,11 +131,11 @@ export default function SuppliersPage() {
             <TableBody>
               {filteredSuppliers.map(supplier => (
                 <TableRow key={supplier.id}>
-                  <TableCell className="font-medium">{supplier.name}</TableCell>
+                  <TableCell className="font-medium truncate">{supplier.name}</TableCell>
                   <TableCell>{supplier.email}</TableCell>
                   <TableCell>{supplier.phone}</TableCell>
                   <TableCell className="hidden md:table-cell">{supplier.contactPerson}</TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center whitespace-nowrap">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(supplier)} className="text-primary hover:text-primary/80">
                       <Edit3 className="h-4 w-4" />
                     </Button>
@@ -162,29 +162,29 @@ export default function SuppliersPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right col-span-1">Nombre</Label>
-              <Input id="name" name="name" value={currentSupplier?.name || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="name" className="sm:text-right sm:col-span-1">Nombre</Label>
+              <Input id="name" name="name" value={currentSupplier?.name || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right col-span-1">{UI_TEXT.EMAIL}</Label>
-              <Input id="email" name="email" type="email" value={currentSupplier?.email || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="email" className="sm:text-right sm:col-span-1">{UI_TEXT.EMAIL}</Label>
+              <Input id="email" name="email" type="email" value={currentSupplier?.email || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="phone" className="text-right col-span-1">{UI_TEXT.PHONE}</Label>
-              <Input id="phone" name="phone" value={currentSupplier?.phone || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="phone" className="sm:text-right sm:col-span-1">{UI_TEXT.PHONE}</Label>
+              <Input id="phone" name="phone" value={currentSupplier?.phone || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-             <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="address" className="text-right col-span-1 pt-2">{UI_TEXT.ADDRESS}</Label>
-              <Textarea id="address" name="address" value={currentSupplier?.address || ''} onChange={handleChange} className="col-span-3" rows={2} />
+             <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-start sm:gap-x-4">
+              <Label htmlFor="address" className="sm:text-right sm:col-span-1 sm:pt-2">{UI_TEXT.ADDRESS}</Label>
+              <Textarea id="address" name="address" value={currentSupplier?.address || ''} onChange={handleChange} className="sm:col-span-3" rows={2} />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="contactPerson" className="text-right col-span-1">{UI_TEXT.CONTACT_PERSON}</Label>
-              <Input id="contactPerson" name="contactPerson" value={currentSupplier?.contactPerson || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="contactPerson" className="sm:text-right sm:col-span-1">{UI_TEXT.CONTACT_PERSON}</Label>
+              <Input id="contactPerson" name="contactPerson" value={currentSupplier?.contactPerson || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="aiHint" className="text-right col-span-1">AI Hint (imagen)</Label>
-              <Input id="aiHint" name="aiHint" value={currentSupplier?.aiHint || ''} onChange={handleChange} className="col-span-3" placeholder="ej: edificio oficina"/>
+             <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="aiHint" className="sm:text-right sm:col-span-1">AI Hint (imagen)</Label>
+              <Input id="aiHint" name="aiHint" value={currentSupplier?.aiHint || ''} onChange={handleChange} className="sm:col-span-3" placeholder="ej: edificio oficina"/>
             </div>
           </div>
           <DialogFooter>

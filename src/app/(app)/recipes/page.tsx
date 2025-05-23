@@ -17,8 +17,8 @@ import { useToast } from '@/hooks/use-toast';
 
 // Mock data - in a real app, this would come from your state management or API
 const mockProducts: Partial<ManagedProduct>[] = [
-  { id: 'p1', name: 'Concha de Vainilla', productType: 'produced_item' },
-  { id: 'p_cake', name: 'Pastel de Chocolate Mediano', productType: 'produced_item' },
+  { id: 'p1', name: 'Concha de Vainilla', productType: 'produced_item', unit: UI_TEXT.UNITS.UNIDADES },
+  { id: 'p_cake', name: 'Pastel de Chocolate Mediano', productType: 'produced_item', unit: UI_TEXT.UNITS.UNIDADES },
 ];
 const mockRawMaterials: Partial<RawMaterial>[] = [
   { id: 'rm1', name: 'Harina de Trigo', unit: UI_TEXT.UNITS.KG },
@@ -162,7 +162,7 @@ export default function RecipesPage() {
     });
   };
   
-  const getProductName = (productId: string) => mockProducts.find(p => p.id === productId)?.name || productId;
+  const getProductName = (productId?: string) => mockProducts.find(p => p.id === productId)?.name || productId || 'N/A';
 
   const filteredRecipes = useMemo(() => {
     return recipes.filter(recipe =>
@@ -212,11 +212,11 @@ export default function RecipesPage() {
             <TableBody>
               {filteredRecipes.map(recipe => (
                 <TableRow key={recipe.id}>
-                  <TableCell className="font-medium">{recipe.name}</TableCell>
+                  <TableCell className="font-medium truncate">{recipe.name}</TableCell>
                   <TableCell>{getProductName(recipe.producesProductId)}</TableCell>
                   <TableCell className="text-right">{recipe.yieldQuantity}</TableCell>
                   <TableCell>{recipe.yieldUnit}</TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center whitespace-nowrap">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(recipe)} className="text-primary hover:text-primary/80">
                       <Edit3 className="h-4 w-4" />
                     </Button>
@@ -244,14 +244,14 @@ export default function RecipesPage() {
           </DialogHeader>
           <ScrollArea className="max-h-[calc(90vh-200px)] p-1">
           <div className="grid gap-6 py-4 pr-3">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right col-span-1">{UI_TEXT.RECIPE_NAME}</Label>
-              <Input id="name" name="name" value={currentRecipe?.name || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="name" className="sm:text-right sm:col-span-1">{UI_TEXT.RECIPE_NAME}</Label>
+              <Input id="name" name="name" value={currentRecipe?.name || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="producesProductId" className="text-right col-span-1">{UI_TEXT.PRODUCES_PRODUCT}</Label>
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="producesProductId" className="sm:text-right sm:col-span-1">{UI_TEXT.PRODUCES_PRODUCT}</Label>
               <Select name="producesProductId" value={currentRecipe?.producesProductId || ''} onValueChange={(value) => handleSelectChange('producesProductId', value)}>
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="sm:col-span-3">
                   <SelectValue placeholder={`Seleccione ${UI_TEXT.PRODUCES_PRODUCT.toLowerCase()}`} />
                 </SelectTrigger>
                 <SelectContent>
@@ -261,14 +261,14 @@ export default function RecipesPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="yieldQuantity" className="text-right col-span-1">{UI_TEXT.YIELD_QUANTITY}</Label>
-              <Input id="yieldQuantity" name="yieldQuantity" type="number" value={currentRecipe?.yieldQuantity || 1} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="yieldQuantity" className="sm:text-right sm:col-span-1">{UI_TEXT.YIELD_QUANTITY}</Label>
+              <Input id="yieldQuantity" name="yieldQuantity" type="number" value={currentRecipe?.yieldQuantity || 1} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="yieldUnit" className="text-right col-span-1">{UI_TEXT.YIELD_UNIT}</Label>
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="yieldUnit" className="sm:text-right sm:col-span-1">{UI_TEXT.YIELD_UNIT}</Label>
               <Select name="yieldUnit" value={currentRecipe?.yieldUnit || ''} onValueChange={(value) => handleSelectChange('yieldUnit', value)}>
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="sm:col-span-3">
                   <SelectValue placeholder={`Seleccione ${UI_TEXT.YIELD_UNIT.toLowerCase()}`} />
                 </SelectTrigger>
                 <SelectContent>
@@ -278,21 +278,21 @@ export default function RecipesPage() {
                 </SelectContent>
               </Select>
             </div>
-             <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="description" className="text-right col-span-1 pt-2">{UI_TEXT.DESCRIPTION}</Label>
-                <Textarea id="description" name="description" value={currentRecipe?.description || ''} onChange={handleChange} className="col-span-3" rows={2}/>
+             <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-start sm:gap-x-4">
+                <Label htmlFor="description" className="sm:text-right sm:col-span-1 sm:pt-2">{UI_TEXT.DESCRIPTION}</Label>
+                <Textarea id="description" name="description" value={currentRecipe?.description || ''} onChange={handleChange} className="sm:col-span-3" rows={2}/>
             </div>
 
             {/* Ingredients Section */}
-            <div className="col-span-4 space-y-2">
+            <div className="col-span-full space-y-2">
               <div className="flex justify-between items-center">
                 <Label className="text-lg font-semibold">{UI_TEXT.INGREDIENTS}</Label>
                 <Button type="button" variant="outline" size="sm" onClick={addIngredient}><PackagePlus className="mr-2 h-4 w-4" /> {UI_TEXT.ADD_INGREDIENT}</Button>
               </div>
               {currentRecipe?.ingredients?.map((ing, index) => (
                 <Card key={ing.id} className="p-3 bg-secondary/30">
-                  <div className="grid grid-cols-12 gap-2 items-end">
-                    <div className="col-span-5">
+                   <div className="grid grid-cols-1 gap-y-2 sm:grid-cols-12 sm:gap-x-2 sm:items-end">
+                    <div className="sm:col-span-5">
                       <Label htmlFor={`ing-item-${ing.id}`} className="text-xs">{UI_TEXT.ITEM_NAME}</Label>
                       <Select 
                         value={ing.itemId} 
@@ -303,16 +303,16 @@ export default function RecipesPage() {
                         </SelectTrigger>
                         <SelectContent>
                           {availableIngredients.map(item => (
-                            <SelectItem key={item.id!} value={item.id!}>{item.name}</SelectItem>
+                            <SelectItem key={item.id!} value={item.id!}>{item.name} ({item.unit})</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                     <div className="col-span-3">
+                     <div className="sm:col-span-3">
                       <Label htmlFor={`ing-qty-${ing.id}`} className="text-xs">{UI_TEXT.QUANTITY}</Label>
                       <Input id={`ing-qty-${ing.id}`} type="number" value={ing.quantity} onChange={(e) => handleIngredientChange(ing.id!, 'quantity', parseFloat(e.target.value))} />
                     </div>
-                    <div className="col-span-3">
+                    <div className="sm:col-span-3">
                       <Label htmlFor={`ing-unit-${ing.id}`} className="text-xs">{UI_TEXT.UNIT}</Label>
                       <Select 
                         value={ing.unit}
@@ -328,8 +328,8 @@ export default function RecipesPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="col-span-1">
-                      <Button type="button" variant="ghost" size="icon" onClick={() => removeIngredient(ing.id!)} className="text-destructive hover:text-destructive/80 mt-auto">
+                    <div className="sm:col-span-1 flex justify-end sm:self-end">
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeIngredient(ing.id!)} className="text-destructive hover:text-destructive/80">
                         <PackageMinus className="h-4 w-4" />
                       </Button>
                     </div>
@@ -339,21 +339,21 @@ export default function RecipesPage() {
               {(!currentRecipe?.ingredients || currentRecipe.ingredients.length === 0) && <p className="text-xs text-muted-foreground text-center py-2">No hay ingredientes.</p>}
             </div>
 
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="instructions" className="text-right col-span-1 pt-2">{UI_TEXT.INSTRUCTIONS}</Label>
-              <Textarea id="instructions" name="instructions" value={currentRecipe?.instructions || ''} onChange={handleChange} className="col-span-3" rows={4} />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-start sm:gap-x-4">
+              <Label htmlFor="instructions" className="sm:text-right sm:col-span-1 sm:pt-2">{UI_TEXT.INSTRUCTIONS}</Label>
+              <Textarea id="instructions" name="instructions" value={currentRecipe?.instructions || ''} onChange={handleChange} className="sm:col-span-3" rows={4} />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="preparationTime" className="text-right col-span-1">{UI_TEXT.PREPARATION_TIME}</Label>
-              <Input id="preparationTime" name="preparationTime" type="number" value={currentRecipe?.preparationTime || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="preparationTime" className="sm:text-right sm:col-span-1">{UI_TEXT.PREPARATION_TIME}</Label>
+              <Input id="preparationTime" name="preparationTime" type="number" value={currentRecipe?.preparationTime || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="cookingTime" className="text-right col-span-1">{UI_TEXT.COOKING_TIME}</Label>
-              <Input id="cookingTime" name="cookingTime" type="number" value={currentRecipe?.cookingTime || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="cookingTime" className="sm:text-right sm:col-span-1">{UI_TEXT.COOKING_TIME}</Label>
+              <Input id="cookingTime" name="cookingTime" type="number" value={currentRecipe?.cookingTime || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="aiHint" className="text-right col-span-1">AI Hint (imagen)</Label>
-              <Input id="aiHint" name="aiHint" value={currentRecipe?.aiHint || ''} onChange={handleChange} className="col-span-3" placeholder="ej: libro recetas"/>
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="aiHint" className="sm:text-right sm:col-span-1">AI Hint (imagen)</Label>
+              <Input id="aiHint" name="aiHint" value={currentRecipe?.aiHint || ''} onChange={handleChange} className="sm:col-span-3" placeholder="ej: libro recetas"/>
             </div>
           </div>
           </ScrollArea>

@@ -111,9 +111,9 @@ export default function BranchesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[80px] hidden sm:table-cell">{UI_TEXT.BRANCH_NAME}</TableHead>
-                <TableHead>{UI_TEXT.ADDRESS}</TableHead>
-                <TableHead>{UI_TEXT.PHONE}</TableHead>
+                <TableHead className="min-w-[200px] hidden sm:table-cell">{UI_TEXT.BRANCH_NAME}</TableHead>
+                <TableHead className="min-w-[250px]">{UI_TEXT.ADDRESS}</TableHead>
+                <TableHead className="min-w-[120px]">{UI_TEXT.PHONE}</TableHead>
                 <TableHead className="text-center">{UI_TEXT.ACTIONS}</TableHead>
               </TableRow>
             </TableHeader>
@@ -121,14 +121,14 @@ export default function BranchesPage() {
               {filteredBranches.map(branch => (
                 <TableRow key={branch.id}>
                   <TableCell className="font-medium">
-                     <div className="flex items-center gap-2">
-                        <Image src={`https://placehold.co/40x40.png?text=${branch.name.charAt(0)}`} alt={branch.name} width={40} height={40} className="rounded-md object-cover" data-ai-hint={branch.aiHint || 'store building'} />
-                        {branch.name}
+                     <div className="flex items-center gap-3">
+                        <Image src={`https://placehold.co/40x40.png?text=${branch.name.charAt(0)}`} alt={branch.name} width={40} height={40} className="rounded-md object-cover flex-shrink-0" data-ai-hint={branch.aiHint || 'store building'} />
+                        <span className="truncate">{branch.name}</span>
                      </div>
                   </TableCell>
                   <TableCell>{branch.address}</TableCell>
                   <TableCell>{branch.phone}</TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center whitespace-nowrap">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(branch)} className="text-primary hover:text-primary/80">
                       <Edit3 className="h-4 w-4" />
                     </Button>
@@ -155,17 +155,17 @@ export default function BranchesPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">{UI_TEXT.BRANCH_NAME}</Label>
-              <Input id="name" name="name" value={currentBranch?.name || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="name" className="sm:text-right sm:col-span-1">{UI_TEXT.BRANCH_NAME}</Label>
+              <Input id="name" name="name" value={currentBranch?.name || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="address" className="text-right">{UI_TEXT.ADDRESS}</Label>
-              <Input id="address" name="address" value={currentBranch?.address || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="address" className="sm:text-right sm:col-span-1">{UI_TEXT.ADDRESS}</Label>
+              <Input id="address" name="address" value={currentBranch?.address || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="phone" className="text-right">{UI_TEXT.PHONE}</Label>
-              <Input id="phone" name="phone" value={currentBranch?.phone || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="phone" className="sm:text-right sm:col-span-1">{UI_TEXT.PHONE}</Label>
+              <Input id="phone" name="phone" value={currentBranch?.phone || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
           </div>
           <DialogFooter>

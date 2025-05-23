@@ -216,7 +216,7 @@ export default function StockTransfersPage() {
                   <TableCell>{getBranchName(tr.destinationBranchId)}</TableCell>
                   <TableCell>{format(new Date(tr.transferDate), "PPP", { locale: es })}</TableCell>
                   <TableCell>{DOCUMENT_STATUS_OPTIONS[tr.status.toUpperCase() as keyof typeof DOCUMENT_STATUS_OPTIONS]?.label || tr.status}</TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center whitespace-nowrap">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(tr)} className="text-primary hover:text-primary/80">
                       <Edit3 className="h-4 w-4" />
                     </Button>
@@ -241,7 +241,7 @@ export default function StockTransfersPage() {
           </DialogHeader>
           <ScrollArea className="max-h-[calc(90vh-200px)] p-1">
             <div className="grid gap-4 py-4 pr-3">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="documentNumber">{UI_TEXT.DOCUMENT_NUMBER}</Label>
                   <Input id="documentNumber" name="documentNumber" value={currentTransfer?.documentNumber || ''} onChange={handleChange} />
@@ -261,7 +261,7 @@ export default function StockTransfersPage() {
                   </Popover>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="sourceBranchId">{UI_TEXT.SOURCE_BRANCH}</Label>
                    <Select name="sourceBranchId" value={currentTransfer?.sourceBranchId || ''} onValueChange={(value) => handleSelectChange('sourceBranchId', value)}>
@@ -281,7 +281,7 @@ export default function StockTransfersPage() {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="expectedArrivalDate">{UI_TEXT.EXPECTED_ARRIVAL_DATE}</Label>
                    <Popover>
@@ -317,8 +317,8 @@ export default function StockTransfersPage() {
                 </div>
                 {currentTransfer?.items?.map((item, index) => (
                   <Card key={item.id} className="p-3 bg-secondary/30">
-                    <div className="grid grid-cols-12 gap-2 items-end">
-                      <div className="col-span-6"> 
+                    <div className="grid grid-cols-1 gap-y-2 sm:grid-cols-12 sm:gap-x-2 sm:items-end">
+                      <div className="sm:col-span-6"> 
                         <Label htmlFor={`item-id-${index}`} className="text-xs">{UI_TEXT.ITEM_NAME}</Label>
                         <Select value={item.itemId} onValueChange={(value) => handleItemChange(index, 'itemId', value)}>
                           <SelectTrigger id={`item-id-${index}`}><SelectValue placeholder="Seleccionar..."/></SelectTrigger>
@@ -327,15 +327,15 @@ export default function StockTransfersPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-2">
+                      <div className="sm:col-span-2">
                         <Label htmlFor={`item-qty-${index}`} className="text-xs">{UI_TEXT.QUANTITY_TRANSFERRED}</Label>
                         <Input id={`item-qty-${index}`} type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value))} />
                       </div>
-                       <div className="col-span-3">
+                       <div className="sm:col-span-3">
                         <Label htmlFor={`item-unit-${index}`} className="text-xs">{UI_TEXT.UNIT}</Label>
                         <Input id={`item-unit-${index}`} value={item.unit} readOnly disabled className="bg-muted/50"/>
                       </div>
-                      <div className="col-span-1">
+                      <div className="sm:col-span-1 flex justify-end sm:self-end">
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(index)} className="text-destructive hover:text-destructive/80">
                           <PackageMinus className="h-4 w-4" />
                         </Button>

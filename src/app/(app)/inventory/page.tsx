@@ -1,12 +1,13 @@
+
 "use client";
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UI_TEXT } from '@/lib/constants';
 import type { InventoryItem } from '@/types';
-import { Edit3, PackageCheck, AlertTriangle, Save, Trash2, PlusCircle } from 'lucide-react';
+import { Edit3, PackageCheck, AlertTriangle, Save, Trash2, PlusCircle, Search, Package } from 'lucide-react';
 import Image from 'next/image';
 import {
   AlertDialog,
@@ -34,6 +35,7 @@ export default function InventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>(initialInventory);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editStockValue, setEditStockValue] = useState<number>(0);
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
   const handleEdit = (item: InventoryItem) => {
@@ -53,19 +55,40 @@ export default function InventoryPage() {
   
   // TODO: Add item, Delete item functionality can be added later.
 
+  const filteredInventory = useMemo(() => {
+    return inventory.filter(item =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [inventory, searchTerm]);
+
+
   return (
     <Card className="shadow-xl">
       <CardHeader>
-        <CardTitle className="text-2xl text-primary">{UI_TEXT.INVENTORY_TITLE}</CardTitle>
+        <CardTitle className="text-2xl text-primary flex items-center">
+            <Package className="mr-2 h-6 w-6" />
+            {UI_TEXT.INVENTORY_TITLE}
+        </CardTitle>
         <CardDescription>Monitoree y actualice los niveles de stock de sus productos e ingredientes.</CardDescription>
       </CardHeader>
       <CardContent>
-        {/* <div className="mb-4 flex justify-end">
-          <Button variant="default">
+         <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Buscar por nombre, categoría..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          {/* <Button variant="default">
             <PlusCircle className="mr-2 h-4 w-4" />
             Agregar Artículo
-          </Button>
-        </div> */}
+          </Button> */}
+        </div>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -79,7 +102,7 @@ export default function InventoryPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {inventory.map(item => (
+              {filteredInventory.map(item => (
                 <TableRow key={item.id} className={item.stock < item.minStockLevel ? 'bg-destructive/10 hover:bg-destructive/20' : ''}>
                   <TableCell className="hidden sm:table-cell">
                     <Image src={item.imageUrl} alt={item.name} width={40} height={40} className="rounded-md object-cover" data-ai-hint={item.aiHint} />
@@ -146,10 +169,11 @@ export default function InventoryPage() {
             </TableBody>
           </Table>
         </div>
-        {inventory.length === 0 && (
-          <p className="text-center text-muted-foreground py-10">{UI_TEXT.NO_DATA}</p>
+        {filteredInventory.length === 0 && (
+          <p className="text-center text-muted-foreground py-10">{searchTerm ? `No se encontraron artículos para "${searchTerm}".` : UI_TEXT.NO_DATA}</p>
         )}
       </CardContent>
     </Card>
   );
 }
+

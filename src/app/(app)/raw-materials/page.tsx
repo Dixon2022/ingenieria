@@ -138,14 +138,14 @@ export default function RawMaterialsPage() {
               {filteredRawMaterials.map(material => (
                 <TableRow key={material.id}>
                    <TableCell className="hidden sm:table-cell">
-                    <Image src={material.imageUrl || `https://placehold.co/40x40.png?text=${material.name.substring(0,1)}`} alt={material.name} width={40} height={40} className="rounded-md object-cover" data-ai-hint={material.aiHint || 'raw material'} />
+                    <Image src={material.imageUrl || `https://placehold.co/40x40.png?text=${material.name.substring(0,1)}`} alt={material.name} width={40} height={40} className="rounded-md object-cover flex-shrink-0" data-ai-hint={material.aiHint || 'raw material'} />
                   </TableCell>
-                  <TableCell className="font-medium">{material.name}</TableCell>
+                  <TableCell className="font-medium truncate">{material.name}</TableCell>
                   <TableCell>{material.category}</TableCell>
                   <TableCell className="text-right">{material.stock}</TableCell>
                   <TableCell>{material.unit}</TableCell>
                   <TableCell className="text-right">{material.minStockLevel}</TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center whitespace-nowrap">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(material)} className="text-primary hover:text-primary/80">
                       <Edit3 className="h-4 w-4" />
                     </Button>
@@ -172,14 +172,14 @@ export default function RawMaterialsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right col-span-1">Nombre</Label>
-              <Input id="name" name="name" value={currentRawMaterial?.name || ''} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="name" className="sm:text-right sm:col-span-1">Nombre</Label>
+              <Input id="name" name="name" value={currentRawMaterial?.name || ''} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="category" className="text-right col-span-1">{UI_TEXT.CATEGORY}</Label>
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="category" className="sm:text-right sm:col-span-1">{UI_TEXT.CATEGORY}</Label>
               <Select name="category" value={currentRawMaterial?.category || ''} onValueChange={(value) => handleSelectChange('category', value)}>
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="sm:col-span-3">
                   <SelectValue placeholder={`Seleccione ${UI_TEXT.CATEGORY.toLowerCase()}`} />
                 </SelectTrigger>
                 <SelectContent>
@@ -189,14 +189,14 @@ export default function RawMaterialsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="stock" className="text-right col-span-1">{UI_TEXT.STOCK}</Label>
-              <Input id="stock" name="stock" type="number" value={currentRawMaterial?.stock || 0} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="stock" className="sm:text-right sm:col-span-1">{UI_TEXT.STOCK}</Label>
+              <Input id="stock" name="stock" type="number" value={currentRawMaterial?.stock || 0} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="unit" className="text-right col-span-1">{UI_TEXT.UNIT}</Label>
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="unit" className="sm:text-right sm:col-span-1">{UI_TEXT.UNIT}</Label>
                <Select name="unit" value={currentRawMaterial?.unit || ''} onValueChange={(value) => handleSelectChange('unit', value)}>
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="sm:col-span-3">
                   <SelectValue placeholder={`Seleccione ${UI_TEXT.UNIT.toLowerCase()}`} />
                 </SelectTrigger>
                 <SelectContent>
@@ -206,26 +206,26 @@ export default function RawMaterialsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="minStockLevel" className="text-right col-span-1">{UI_TEXT.MIN_QUANTITY_TOLERANCE}</Label>
-              <Input id="minStockLevel" name="minStockLevel" type="number" value={currentRawMaterial?.minStockLevel || 0} onChange={handleChange} className="col-span-3" />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="minStockLevel" className="sm:text-right sm:col-span-1">{UI_TEXT.MIN_QUANTITY_TOLERANCE}</Label>
+              <Input id="minStockLevel" name="minStockLevel" type="number" value={currentRawMaterial?.minStockLevel || 0} onChange={handleChange} className="sm:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="supplierId" className="text-right col-span-1">{UI_TEXT.SUPPLIER}</Label>
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+                <Label htmlFor="supplierId" className="sm:text-right sm:col-span-1">{UI_TEXT.SUPPLIER}</Label>
                 {/* TODO: Replace with a Select populated by actual suppliers */}
-                <Input id="supplierId" name="supplierId" value={currentRawMaterial?.supplierId || ''} onChange={handleChange} className="col-span-3" placeholder="ID Proveedor (opcional)" />
+                <Input id="supplierId" name="supplierId" value={currentRawMaterial?.supplierId || ''} onChange={handleChange} className="sm:col-span-3" placeholder="ID Proveedor (opcional)" />
             </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="description" className="text-right col-span-1 pt-2">{UI_TEXT.DESCRIPTION}</Label>
-              <Textarea id="description" name="description" value={currentRawMaterial?.description || ''} onChange={handleChange} className="col-span-3" rows={3} />
+            <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-start sm:gap-x-4">
+              <Label htmlFor="description" className="sm:text-right sm:col-span-1 sm:pt-2">{UI_TEXT.DESCRIPTION}</Label>
+              <Textarea id="description" name="description" value={currentRawMaterial?.description || ''} onChange={handleChange} className="sm:col-span-3" rows={3} />
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="imageUrl" className="text-right col-span-1">URL de Imagen</Label>
-              <Input id="imageUrl" name="imageUrl" value={currentRawMaterial?.imageUrl || ''} onChange={handleChange} className="col-span-3" placeholder="https://placehold.co/40x40.png"/>
+             <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="imageUrl" className="sm:text-right sm:col-span-1">URL de Imagen</Label>
+              <Input id="imageUrl" name="imageUrl" value={currentRawMaterial?.imageUrl || ''} onChange={handleChange} className="sm:col-span-3" placeholder="https://placehold.co/40x40.png"/>
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="aiHint" className="text-right col-span-1">AI Hint (imagen)</Label>
-              <Input id="aiHint" name="aiHint" value={currentRawMaterial?.aiHint || ''} onChange={handleChange} className="col-span-3" placeholder="ej: harina costal"/>
+             <div className="grid grid-cols-1 items-start gap-y-2 sm:grid-cols-4 sm:items-center sm:gap-x-4">
+              <Label htmlFor="aiHint" className="sm:text-right sm:col-span-1">AI Hint (imagen)</Label>
+              <Input id="aiHint" name="aiHint" value={currentRawMaterial?.aiHint || ''} onChange={handleChange} className="sm:col-span-3" placeholder="ej: harina costal"/>
             </div>
           </div>
           <DialogFooter>

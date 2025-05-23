@@ -1,6 +1,6 @@
 
 "use client";
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { UI_TEXT } from '@/lib/constants';
 import type { Supplier } from '@/types';
-import { Edit3, Trash2, PlusCircle, Truck } from 'lucide-react';
+import { Edit3, Trash2, PlusCircle, Truck, Search } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 
@@ -25,6 +25,7 @@ export default function SuppliersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentSupplier, setCurrentSupplier] = useState<Partial<Supplier>>({});
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
   const handleOpenModal = (supplier?: Supplier) => {
@@ -81,6 +82,15 @@ export default function SuppliersPage() {
     setCurrentSupplier(prev => prev ? { ...prev, [name]: value } : {});
   };
 
+  const filteredSuppliers = useMemo(() => {
+    return suppliers.filter(supplier =>
+      supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (supplier.email && supplier.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (supplier.phone && supplier.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (supplier.contactPerson && supplier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [suppliers, searchTerm]);
+
   return (
     <Card className="shadow-xl">
       <CardHeader>
@@ -91,8 +101,18 @@ export default function SuppliersPage() {
         <CardDescription>{UI_TEXT.MANAGE_SUPPLIERS_DESCRIPTION}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 flex justify-end">
-          <Button onClick={() => handleOpenModal()} variant="default">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Buscar por nombre, contacto, email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Button onClick={() => handleOpenModal()} variant="default" className="w-full sm:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" />
             {UI_TEXT.ADD_SUPPLIER}
           </Button>
@@ -109,7 +129,7 @@ export default function SuppliersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {suppliers.map(supplier => (
+              {filteredSuppliers.map(supplier => (
                 <TableRow key={supplier.id}>
                   <TableCell className="font-medium">{supplier.name}</TableCell>
                   <TableCell>{supplier.email}</TableCell>
@@ -128,13 +148,13 @@ export default function SuppliersPage() {
             </TableBody>
           </Table>
         </div>
-        {suppliers.length === 0 && (
-          <p className="text-center text-muted-foreground py-10">{UI_TEXT.NO_DATA}</p>
+        {filteredSuppliers.length === 0 && (
+           <p className="text-center text-muted-foreground py-10">{searchTerm ? `No se encontraron proveedores para "${searchTerm}".` : UI_TEXT.NO_DATA}</p>
         )}
       </CardContent>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingSupplier ? UI_TEXT.EDIT_SUPPLIER : UI_TEXT.ADD_SUPPLIER}</DialogTitle>
             <DialogDescription>
@@ -177,3 +197,4 @@ export default function SuppliersPage() {
   );
 }
 
+    

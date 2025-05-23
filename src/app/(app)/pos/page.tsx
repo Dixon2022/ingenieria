@@ -1,5 +1,6 @@
+
 "use client";
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -7,18 +8,19 @@ import { Separator } from '@/components/ui/separator';
 import { UI_TEXT } from '@/lib/constants';
 import type { Product, CartItem } from '@/types';
 import Image from 'next/image';
-import { PlusCircle, MinusCircle, XCircle, ShoppingCart, Cookie, CakeSlice, Coffee, CheckCircle } from 'lucide-react';
+import { PlusCircle, MinusCircle, XCircle, ShoppingCart, Cookie, CakeSlice, Coffee, CheckCircle, Search } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { Input } from '@/components/ui/input';
 
 const mockProducts: Product[] = [
-  { id: '1', name: 'Concha de Vainilla', price: 15, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'sweet bread' },
-  { id: '2', name: 'Bolillo', price: 5, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_SALADO, aiHint: 'bread roll' },
-  { id: '3', name: 'Oreja', price: 18, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'palmier pastry' },
-  { id: '4', name: 'Empanada de Piña', price: 20, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'empanada pastry' },
-  { id: '5', name: 'Pastel de Chocolate (Rebanada)', price: 45, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PASTELES, aiHint: 'chocolate cake' },
-  { id: '6', name: 'Café Americano', price: 25, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.BEBIDAS, aiHint: 'coffee cup' },
-  { id: '7', name: 'Croissant', price: 22, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'croissant pastry' },
-  { id: '8', name: 'Baguette', price: 30, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_SALADO, aiHint: 'baguette bread' },
+  { id: '1', name: 'Concha de Vainilla', price: 1500, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'sweet bread' },
+  { id: '2', name: 'Bolillo', price: 500, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_SALADO, aiHint: 'bread roll' },
+  { id: '3', name: 'Oreja', price: 1800, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'palmier pastry' },
+  { id: '4', name: 'Empanada de Piña', price: 2000, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'empanada pastry' },
+  { id: '5', name: 'Pastel de Chocolate (Rebanada)', price: 4500, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PASTELES, aiHint: 'chocolate cake' },
+  { id: '6', name: 'Café Americano', price: 2500, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.BEBIDAS, aiHint: 'coffee cup' },
+  { id: '7', name: 'Croissant', price: 2200, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, aiHint: 'croissant pastry' },
+  { id: '8', name: 'Baguette', price: 3000, imageUrl: 'https://placehold.co/150x150.png', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_SALADO, aiHint: 'baguette bread' },
 ];
 
 const categoryIcons: Record<string, ReactNode> = {
@@ -35,7 +37,7 @@ function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: 
       <CardHeader className="p-0 relative">
         <Image src={product.imageUrl} alt={product.name} width={200} height={200} className="w-full h-40 object-cover" data-ai-hint={product.aiHint}/>
         <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-1 rounded-md text-xs font-semibold">
-          ${product.price.toFixed(2)}
+          ₡{product.price.toFixed(0)}
         </div>
       </CardHeader>
       <CardContent className="p-4 flex-grow">
@@ -58,6 +60,7 @@ function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: 
 export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
@@ -93,10 +96,20 @@ export default function POSPage() {
     setCart([]); // Clear cart after checkout
   };
 
-  const groupedProducts = mockProducts.reduce((acc, product) => {
-    (acc[product.category] = acc[product.category] || []).push(product);
-    return acc;
-  }, {} as Record<string, Product[]>);
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm) return mockProducts;
+    return mockProducts.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm]);
+
+  const groupedProducts = useMemo(() => {
+    return filteredProducts.reduce((acc, product) => {
+      (acc[product.category] = acc[product.category] || []).push(product);
+      return acc;
+    }, {} as Record<string, Product[]>);
+  }, [filteredProducts]);
 
 
   return (
@@ -106,6 +119,16 @@ export default function POSPage() {
           <CardHeader>
             <CardTitle className="text-2xl text-primary">{UI_TEXT.POS_TITLE}</CardTitle>
             <CardDescription>Seleccione productos para agregar al carrito.</CardDescription>
+             <div className="relative mt-2">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Buscar productos por nombre o categoría..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8 w-full sm:w-2/3 lg:w-1/2"
+              />
+            </div>
           </CardHeader>
           <CardContent className="flex-grow overflow-hidden p-0">
             <ScrollArea className="h-full p-6">
@@ -122,6 +145,9 @@ export default function POSPage() {
                   </div>
                 </div>
               ))}
+               {filteredProducts.length === 0 && searchTerm && (
+                <p className="text-center text-muted-foreground py-10">No se encontraron productos para "{searchTerm}".</p>
+              )}
             </ScrollArea>
           </CardContent>
         </Card>
@@ -144,7 +170,7 @@ export default function POSPage() {
                         <Image src={item.imageUrl} alt={item.name} width={40} height={40} className="rounded-md object-cover" data-ai-hint={item.aiHint} />
                         <div>
                           <p className="font-medium truncate max-w-[120px] sm:max-w-none">{item.name}</p>
-                          <p className="text-sm text-muted-foreground">${item.price.toFixed(2)} x {item.quantity}</p>
+                          <p className="text-sm text-muted-foreground">₡{item.price.toFixed(0)} x {item.quantity}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -168,12 +194,12 @@ export default function POSPage() {
             <CardFooter className="flex flex-col gap-3 border-t pt-4">
               <div className="flex justify-between w-full text-lg font-semibold">
                 <span>{UI_TEXT.TOTAL}:</span>
-                <span>${total.toFixed(2)}</span>
+                <span>₡{total.toFixed(0)}</span>
               </div>
               <div className="flex gap-2 w-full">
                 <Button onClick={handleCheckout} className="flex-1" size="lg">
                   <CheckCircle className="mr-2 h-5 w-5" />
-                  {UI_TEXT.CHECKOUT} (${total.toFixed(2)})
+                  {UI_TEXT.CHECKOUT} (₡{total.toFixed(0)})
                 </Button>
                 <Button onClick={() => setCart([])} variant="outline" className="flex-1" size="lg">
                   <XCircle className="mr-2 h-5 w-5" />
@@ -187,3 +213,5 @@ export default function POSPage() {
     </div>
   );
 }
+
+    

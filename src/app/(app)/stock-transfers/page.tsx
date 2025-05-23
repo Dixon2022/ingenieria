@@ -1,6 +1,6 @@
 
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { UI_TEXT, ALL_UNITS, DOCUMENT_STATUS_OPTIONS } from '@/lib/constants';
 import type { StockTransfer, StockTransferItem, Branch, ManagedProduct, RawMaterial } from '@/types';
-import { Edit3, Trash2, PlusCircle, ArrowRightLeft, PackagePlus, PackageMinus, Calendar as CalendarIcon } from 'lucide-react';
+import { Edit3, Trash2, PlusCircle, ArrowRightLeft, PackagePlus, PackageMinus, Calendar as CalendarIcon, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -52,6 +52,7 @@ export default function StockTransfersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentTransfer, setCurrentTransfer] = useState<Partial<StockTransfer>>({});
   const [editingTransfer, setEditingTransfer] = useState<StockTransfer | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
   const handleOpenModal = (transfer?: StockTransfer) => {
@@ -160,6 +161,15 @@ export default function StockTransfersPage() {
 
   const getBranchName = (branchId?: string) => mockBranches.find(b => b.id === branchId)?.name || branchId || '-';
 
+  const filteredTransfers = useMemo(() => {
+    return transfers.filter(tr =>
+      tr.documentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getBranchName(tr.sourceBranchId).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getBranchName(tr.destinationBranchId).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (tr.status && DOCUMENT_STATUS_OPTIONS[tr.status.toUpperCase() as keyof typeof DOCUMENT_STATUS_OPTIONS]?.label.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [transfers, searchTerm]);
+
   return (
     <Card className="shadow-xl">
       <CardHeader>
@@ -170,8 +180,18 @@ export default function StockTransfersPage() {
         <CardDescription>{UI_TEXT.MANAGE_STOCK_TRANSFERS_DESCRIPTION}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 flex justify-end">
-          <Button onClick={() => handleOpenModal()} variant="default">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Buscar por No., sucursal, estado..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Button onClick={() => handleOpenModal()} variant="default" className="w-full sm:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" />
             {UI_TEXT.ADD_STOCK_TRANSFER}
           </Button>
@@ -189,7 +209,7 @@ export default function StockTransfersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transfers.map(tr => (
+              {filteredTransfers.map(tr => (
                 <TableRow key={tr.id}>
                   <TableCell className="font-medium">{tr.documentNumber}</TableCell>
                   <TableCell>{getBranchName(tr.sourceBranchId)}</TableCell>
@@ -209,13 +229,13 @@ export default function StockTransfersPage() {
             </TableBody>
           </Table>
         </div>
-        {transfers.length === 0 && (
-          <p className="text-center text-muted-foreground py-10">{UI_TEXT.NO_DATA}</p>
+        {filteredTransfers.length === 0 && (
+           <p className="text-center text-muted-foreground py-10">{searchTerm ? `No se encontraron traslados para "${searchTerm}".` : UI_TEXT.NO_DATA}</p>
         )}
       </CardContent>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh]">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>{editingTransfer ? UI_TEXT.EDIT_STOCK_TRANSFER : UI_TEXT.ADD_STOCK_TRANSFER}</DialogTitle>
           </DialogHeader>
@@ -340,3 +360,5 @@ export default function StockTransfersPage() {
     </Card>
   );
 }
+
+    

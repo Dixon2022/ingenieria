@@ -1,6 +1,6 @@
 
 "use client";
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { UI_TEXT } from '@/lib/constants';
 import type { Branch } from '@/types';
-import { Edit3, Trash2, PlusCircle, Building } from 'lucide-react';
+import { Edit3, Trash2, PlusCircle, Building, Search } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 
@@ -24,6 +24,7 @@ export default function BranchesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentBranch, setCurrentBranch] = useState<Partial<Branch> | null>(null);
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
   const handleOpenModal = (branch?: Branch) => {
@@ -72,6 +73,14 @@ export default function BranchesPage() {
     setCurrentBranch(prev => prev ? { ...prev, [name]: value } : null);
   };
 
+  const filteredBranches = useMemo(() => {
+    return branches.filter(branch =>
+      branch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      branch.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      branch.phone.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [branches, searchTerm]);
+
   return (
     <Card className="shadow-xl">
       <CardHeader>
@@ -82,8 +91,18 @@ export default function BranchesPage() {
         <CardDescription>{UI_TEXT.MANAGE_BRANCHES_DESCRIPTION}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 flex justify-end">
-          <Button onClick={() => handleOpenModal()} variant="default">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Buscar por nombre, dirección..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Button onClick={() => handleOpenModal()} variant="default" className="w-full sm:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" />
             {UI_TEXT.ADD_BRANCH}
           </Button>
@@ -92,14 +111,14 @@ export default function BranchesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[80px] hidden sm:table-cell">{UI_TEXT.ITEM_NAME}</TableHead>
+                <TableHead className="w-[80px] hidden sm:table-cell">{UI_TEXT.BRANCH_NAME}</TableHead>
                 <TableHead>{UI_TEXT.ADDRESS}</TableHead>
                 <TableHead>{UI_TEXT.PHONE}</TableHead>
                 <TableHead className="text-center">{UI_TEXT.ACTIONS}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {branches.map(branch => (
+              {filteredBranches.map(branch => (
                 <TableRow key={branch.id}>
                   <TableCell className="font-medium">
                      <div className="flex items-center gap-2">
@@ -122,13 +141,13 @@ export default function BranchesPage() {
             </TableBody>
           </Table>
         </div>
-        {branches.length === 0 && (
-          <p className="text-center text-muted-foreground py-10">{UI_TEXT.NO_DATA}</p>
+        {filteredBranches.length === 0 && (
+          <p className="text-center text-muted-foreground py-10">{searchTerm ? `No se encontraron sucursales para "${searchTerm}".` : UI_TEXT.NO_DATA}</p>
         )}
       </CardContent>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{editingBranch ? UI_TEXT.EDIT_BRANCH : UI_TEXT.ADD_BRANCH}</DialogTitle>
             <DialogDescription>
@@ -158,3 +177,5 @@ export default function BranchesPage() {
     </Card>
   );
 }
+
+    

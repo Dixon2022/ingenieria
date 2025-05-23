@@ -1,6 +1,6 @@
 
 "use client";
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UI_TEXT, ALL_UNITS, ALL_RAW_MATERIAL_CATEGORIES } from '@/lib/constants';
 import type { RawMaterial } from '@/types';
-import { Edit3, Trash2, PlusCircle, Beaker } from 'lucide-react';
+import { Edit3, Trash2, PlusCircle, Beaker, Search } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 
@@ -26,6 +26,7 @@ export default function RawMaterialsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentRawMaterial, setCurrentRawMaterial] = useState<Partial<RawMaterial>>({});
   const [editingRawMaterial, setEditingRawMaterial] = useState<RawMaterial | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
   const handleOpenModal = (material?: RawMaterial) => {
@@ -87,6 +88,13 @@ export default function RawMaterialsPage() {
     setCurrentRawMaterial(prev => prev ? { ...prev, [name]: value } : {});
   };
 
+  const filteredRawMaterials = useMemo(() => {
+    return rawMaterials.filter(material =>
+      material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      material.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [rawMaterials, searchTerm]);
+
   return (
     <Card className="shadow-xl">
       <CardHeader>
@@ -97,8 +105,18 @@ export default function RawMaterialsPage() {
         <CardDescription>{UI_TEXT.MANAGE_RAW_MATERIALS_DESCRIPTION}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 flex justify-end">
-          <Button onClick={() => handleOpenModal()} variant="default">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Buscar por nombre o categoría..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Button onClick={() => handleOpenModal()} variant="default" className="w-full sm:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" />
             {UI_TEXT.ADD_RAW_MATERIAL}
           </Button>
@@ -117,7 +135,7 @@ export default function RawMaterialsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rawMaterials.map(material => (
+              {filteredRawMaterials.map(material => (
                 <TableRow key={material.id}>
                    <TableCell className="hidden sm:table-cell">
                     <Image src={material.imageUrl || `https://placehold.co/40x40.png?text=${material.name.substring(0,1)}`} alt={material.name} width={40} height={40} className="rounded-md object-cover" data-ai-hint={material.aiHint || 'raw material'} />
@@ -140,13 +158,13 @@ export default function RawMaterialsPage() {
             </TableBody>
           </Table>
         </div>
-        {rawMaterials.length === 0 && (
-          <p className="text-center text-muted-foreground py-10">{UI_TEXT.NO_DATA}</p>
+        {filteredRawMaterials.length === 0 && (
+          <p className="text-center text-muted-foreground py-10">{searchTerm ? `No se encontraron materias primas para "${searchTerm}".` : UI_TEXT.NO_DATA}</p>
         )}
       </CardContent>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingRawMaterial ? UI_TEXT.EDIT_RAW_MATERIAL : UI_TEXT.ADD_RAW_MATERIAL}</DialogTitle>
             <DialogDescription>
@@ -219,3 +237,5 @@ export default function RawMaterialsPage() {
     </Card>
   );
 }
+
+    

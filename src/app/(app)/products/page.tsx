@@ -1,6 +1,6 @@
 
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,14 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UI_TEXT, ALL_PRODUCT_CATEGORIES, ALL_UNITS } from '@/lib/constants';
 import type { ManagedProduct, ProductType } from '@/types';
 import { PRODUCT_TYPE_OPTIONS } from '@/types'; // Ensure this is exported from types
-import { Edit3, Trash2, PlusCircle, ClipboardList } from 'lucide-react';
+import { Edit3, Trash2, PlusCircle, ClipboardList, Search } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 
 const initialProducts: ManagedProduct[] = [
-  { id: 'p1', name: 'Concha de Vainilla', productType: 'produced_item', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, price: 15, cost: 5, unit: UI_TEXT.UNITS.UNIDADES, stock: 50, minStockLevel: 20, recipeId: 'r1', imageUrl: 'https://placehold.co/40x40.png', aiHint: 'vanilla concha' },
-  { id: 'p2', name: 'Bolsa de Café Grano Entero 250g', productType: 'third_party_sale', category: UI_TEXT.PRODUCT_CATEGORIES.BEBIDAS, price: 120, cost: 80, unit: UI_TEXT.UNITS.UNIDADES, stock: 30, minStockLevel: 10, supplierId: 's1', imageUrl: 'https://placehold.co/40x40.png', aiHint: 'coffee bag' },
-  { id: 'p3', name: 'Chispas de Chocolate (uso interno)', productType: 'third_party_production', category: UI_TEXT.RAW_MATERIAL_CATEGORIES.INGREDIENTES, cost: 50, unit: UI_TEXT.UNITS.KG, stock: 10, minStockLevel: 2, supplierId: 's2', imageUrl: 'https://placehold.co/40x40.png', aiHint: 'chocolate chips' },
+  { id: 'p1', name: 'Concha de Vainilla', productType: 'produced_item', category: UI_TEXT.PRODUCT_CATEGORIES.PAN_DULCE, price: 1500, cost: 500, unit: UI_TEXT.UNITS.UNIDADES, stock: 50, minStockLevel: 20, recipeId: 'r1', imageUrl: 'https://placehold.co/40x40.png', aiHint: 'vanilla concha' },
+  { id: 'p2', name: 'Bolsa de Café Grano Entero 250g', productType: 'third_party_sale', category: UI_TEXT.PRODUCT_CATEGORIES.BEBIDAS, price: 12000, cost: 8000, unit: UI_TEXT.UNITS.UNIDADES, stock: 30, minStockLevel: 10, supplierId: 's1', imageUrl: 'https://placehold.co/40x40.png', aiHint: 'coffee bag' },
+  { id: 'p3', name: 'Chispas de Chocolate (uso interno)', productType: 'third_party_production', category: UI_TEXT.RAW_MATERIAL_CATEGORIES.INGREDIENTES, cost: 5000, unit: UI_TEXT.UNITS.KG, stock: 10, minStockLevel: 2, supplierId: 's2', imageUrl: 'https://placehold.co/40x40.png', aiHint: 'chocolate chips' },
 ];
 
 export default function ProductsPage() {
@@ -27,6 +27,7 @@ export default function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<ManagedProduct>>({});
   const [editingProduct, setEditingProduct] = useState<ManagedProduct | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
   const handleOpenModal = (product?: ManagedProduct) => {
@@ -47,7 +48,6 @@ export default function ProductsPage() {
       return;
     }
 
-    // Basic validation for price/cost based on type
     if ((currentProduct.productType === 'third_party_sale' || currentProduct.productType === 'produced_item') && (currentProduct.price === undefined || currentProduct.price < 0)) {
        toast({ variant: 'destructive', title: 'Error', description: 'Precio de venta es requerido y debe ser positivo para este tipo de producto.' });
        return;
@@ -57,13 +57,12 @@ export default function ProductsPage() {
        return;
     }
 
-
     if (editingProduct) {
       setProducts(products.map(p => p.id === editingProduct.id ? { ...editingProduct, ...currentProduct } as ManagedProduct : p));
       toast({ title: UI_TEXT.EDIT_PRODUCT, description: `El producto "${currentProduct.name}" ha sido actualizado.` });
     } else {
       const newProduct: ManagedProduct = {
-        id: `p${Date.now()}`, // simple ID
+        id: `p${Date.now()}`, 
         name: currentProduct.name!,
         productType: currentProduct.productType!,
         category: currentProduct.category!,
@@ -100,6 +99,13 @@ export default function ProductsPage() {
     setCurrentProduct(prev => prev ? { ...prev, [name]: value } : {});
   };
 
+  const filteredProducts = useMemo(() => {
+    return products.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      UI_TEXT.PRODUCT_TYPES_LABELS[product.productType].toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [products, searchTerm]);
 
   return (
     <Card className="shadow-xl">
@@ -111,8 +117,18 @@ export default function ProductsPage() {
         <CardDescription>{UI_TEXT.MANAGE_PRODUCTS_DESCRIPTION}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 flex justify-end">
-          <Button onClick={() => handleOpenModal()} variant="default">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Buscar por nombre, categoría, tipo..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Button onClick={() => handleOpenModal()} variant="default" className="w-full sm:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" />
             {UI_TEXT.ADD_PRODUCT}
           </Button>
@@ -133,7 +149,7 @@ export default function ProductsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map(product => (
+              {filteredProducts.map(product => (
                 <TableRow key={product.id}>
                   <TableCell className="hidden sm:table-cell">
                     <Image src={product.imageUrl || `https://placehold.co/40x40.png?text=${product.name.substring(0,1)}`} alt={product.name} width={40} height={40} className="rounded-md object-cover" data-ai-hint={product.aiHint || 'product item'} />
@@ -141,8 +157,8 @@ export default function ProductsPage() {
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{UI_TEXT.PRODUCT_TYPES_LABELS[product.productType]}</TableCell>
                   <TableCell>{product.category}</TableCell>
-                  <TableCell className="text-right">{product.price !== undefined ? `$${product.price.toFixed(2)}` : '-'}</TableCell>
-                  <TableCell className="text-right">{product.cost !== undefined ? `$${product.cost.toFixed(2)}` : '-'}</TableCell>
+                  <TableCell className="text-right">{product.price !== undefined ? `₡${product.price.toFixed(0)}` : '-'}</TableCell>
+                  <TableCell className="text-right">{product.cost !== undefined ? `₡${product.cost.toFixed(0)}` : '-'}</TableCell>
                   <TableCell className="text-right">{product.stock}</TableCell>
                   <TableCell>{product.unit}</TableCell>
                   <TableCell className="text-center">
@@ -158,13 +174,13 @@ export default function ProductsPage() {
             </TableBody>
           </Table>
         </div>
-        {products.length === 0 && (
-          <p className="text-center text-muted-foreground py-10">{UI_TEXT.NO_DATA}</p>
+        {filteredProducts.length === 0 && (
+          <p className="text-center text-muted-foreground py-10">{searchTerm ? `No se encontraron productos para "${searchTerm}".` : UI_TEXT.NO_DATA}</p>
         )}
       </CardContent>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingProduct ? UI_TEXT.EDIT_PRODUCT : UI_TEXT.ADD_PRODUCT}</DialogTitle>
             <DialogDescription>
@@ -219,7 +235,7 @@ export default function ProductsPage() {
             { (currentProduct.productType === 'third_party_sale' || currentProduct.productType === 'produced_item') && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="price" className="text-right col-span-1">{UI_TEXT.PRICE}</Label>
-                <Input id="price" name="price" type="number" value={currentProduct?.price || ''} onChange={handleChange} className="col-span-3" placeholder="0.00" />
+                <Input id="price" name="price" type="number" value={currentProduct?.price || ''} onChange={handleChange} className="col-span-3" placeholder="0" />
               </div>
             )}
 
@@ -227,7 +243,7 @@ export default function ProductsPage() {
               <>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="cost" className="text-right col-span-1">{UI_TEXT.COST}</Label>
-                  <Input id="cost" name="cost" type="number" value={currentProduct?.cost || ''} onChange={handleChange} className="col-span-3" placeholder="0.00" />
+                  <Input id="cost" name="cost" type="number" value={currentProduct?.cost || ''} onChange={handleChange} className="col-span-3" placeholder="0" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="supplierId" className="text-right col-span-1">{UI_TEXT.SUPPLIER}</Label>
@@ -274,3 +290,5 @@ export default function ProductsPage() {
     </Card>
   );
 }
+
+    

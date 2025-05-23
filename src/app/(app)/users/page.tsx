@@ -1,6 +1,6 @@
 
 "use client";
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { UI_TEXT } from '@/lib/constants';
 import type { ManagedUser } from '@/types';
-import { Edit3, Trash2, PlusCircle, UserCog, UsersIcon } from 'lucide-react';
+import { Edit3, Trash2, PlusCircle, UserCog, UsersIcon, Search } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 
@@ -29,6 +29,7 @@ export default function UsersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<Partial<ManagedUser>>({});
   const [editingUser, setEditingUser] = useState<ManagedUser | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
   const handleOpenModal = (user?: ManagedUser) => {
@@ -92,6 +93,15 @@ export default function UsersPage() {
     });
   };
 
+  const filteredUsers = useMemo(() => {
+    return users.filter(user =>
+      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.identification.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.roles.some(role => role.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [users, searchTerm]);
 
   return (
     <Card className="shadow-xl">
@@ -103,8 +113,18 @@ export default function UsersPage() {
         <CardDescription>{UI_TEXT.MANAGE_USERS_DESCRIPTION}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 flex justify-end">
-          <Button onClick={() => handleOpenModal()} variant="default">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+           <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Buscar por nombre, usuario, rol..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Button onClick={() => handleOpenModal()} variant="default" className="w-full sm:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" />
             {UI_TEXT.ADD_USER}
           </Button>
@@ -123,7 +143,7 @@ export default function UsersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map(user => (
+              {filteredUsers.map(user => (
                 <TableRow key={user.id}>
                   <TableCell className="hidden sm:table-cell">
                      <div className="flex items-center gap-2">
@@ -157,20 +177,20 @@ export default function UsersPage() {
             </TableBody>
           </Table>
         </div>
-        {users.length === 0 && (
-          <p className="text-center text-muted-foreground py-10">{UI_TEXT.NO_DATA}</p>
+        {filteredUsers.length === 0 && (
+          <p className="text-center text-muted-foreground py-10">{searchTerm ? `No se encontraron usuarios para "${searchTerm}".` : UI_TEXT.NO_DATA}</p>
         )}
       </CardContent>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{editingUser ? UI_TEXT.EDIT_USER : UI_TEXT.ADD_USER}</DialogTitle>
             <DialogDescription>
               {editingUser ? `Actualice los detalles del usuario "${editingUser.username}".` : "Ingrese los detalles del nuevo usuario."}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
+          <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="identification" className="text-right">{UI_TEXT.IDENTIFICATION}</Label>
               <Input id="identification" name="identification" value={currentUser?.identification || ''} onChange={handleChange} className="col-span-3" />
@@ -228,3 +248,5 @@ export default function UsersPage() {
     </Card>
   );
 }
+
+    

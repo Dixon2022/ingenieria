@@ -1,6 +1,6 @@
 
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { UI_TEXT, ALL_UNITS } from '@/lib/constants';
 import type { Recipe, RecipeIngredient, ManagedProduct, RawMaterial } from '@/types';
-import { Edit3, Trash2, PlusCircle, BookCopy, PackagePlus, PackageMinus } from 'lucide-react';
+import { Edit3, Trash2, PlusCircle, BookCopy, PackagePlus, PackageMinus, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 // Mock data - in a real app, this would come from your state management or API
@@ -38,9 +38,9 @@ const initialRecipes: Recipe[] = [
     yieldQuantity: 12, 
     yieldUnit: UI_TEXT.UNITS.UNIDADES,
     ingredients: [
-      { itemId: 'rm1', itemType: 'raw_material', name: 'Harina de Trigo', quantity: 0.5, unit: UI_TEXT.UNITS.KG },
-      { itemId: 'rm2', itemType: 'raw_material', name: 'Azúcar Refinada', quantity: 0.2, unit: UI_TEXT.UNITS.KG },
-      { itemId: 'rm_egg', itemType: 'raw_material', name: 'Huevo Fresco', quantity: 2, unit: UI_TEXT.UNITS.UNIDADES },
+      { id: 'ing_temp_1', itemId: 'rm1', itemType: 'raw_material', name: 'Harina de Trigo', quantity: 0.5, unit: UI_TEXT.UNITS.KG },
+      { id: 'ing_temp_2', itemId: 'rm2', itemType: 'raw_material', name: 'Azúcar Refinada', quantity: 0.2, unit: UI_TEXT.UNITS.KG },
+      { id: 'ing_temp_3', itemId: 'rm_egg', itemType: 'raw_material', name: 'Huevo Fresco', quantity: 2, unit: UI_TEXT.UNITS.UNIDADES },
     ],
     instructions: "1. Mezclar ingredientes secos.\n2. Agregar líquidos y amasar.\n3. Formar y hornear.",
     preparationTime: 30,
@@ -56,12 +56,13 @@ export default function RecipesPage() {
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [availableProducts, setAvailableProducts] = useState<Partial<ManagedProduct>[]>(mockProducts.filter(p => p.productType === 'produced_item'));
   const [availableIngredients, setAvailableIngredients] = useState<(Partial<ManagedProduct> | Partial<RawMaterial>)[]>(() => [...mockRawMaterials, ...mockProducts.filter(p => p.productType !== 'produced_item')]);
-
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
   const handleOpenModal = (recipe?: Recipe) => {
     setEditingRecipe(recipe || null);
-    setCurrentRecipe(recipe ? { ...recipe, ingredients: recipe.ingredients ? [...recipe.ingredients.map(ing => ({...ing}))] : [] } : { name: '', producesProductId: '', yieldQuantity: 1, yieldUnit: ALL_UNITS[0], ingredients: [], instructions: '' });
+    const ingredientsWithTempIds = recipe?.ingredients?.map((ing, idx) => ({ ...ing, id: `temp_id_${idx}` })) || [];
+    setCurrentRecipe(recipe ? { ...recipe, ingredients: ingredientsWithTempIds } : { name: '', producesProductId: '', yieldQuantity: 1, yieldUnit: ALL_UNITS[0], ingredients: [], instructions: '' });
     setIsModalOpen(true);
   };
 
@@ -85,22 +86,19 @@ export default function RecipesPage() {
       return;
     }
 
+    const recipeToSave = {
+        ...currentRecipe,
+        ingredients: currentRecipe.ingredients?.map(({ id, ...rest}) => rest) // Remove temporary id from ingredients
+    } as Omit<Recipe, 'id'>;
+
 
     if (editingRecipe) {
-      setRecipes(recipes.map(r => r.id === editingRecipe.id ? { ...editingRecipe, ...currentRecipe } as Recipe : r));
+      setRecipes(recipes.map(r => r.id === editingRecipe.id ? { id: editingRecipe.id, ...recipeToSave } : r));
       toast({ title: UI_TEXT.EDIT_RECIPE, description: `La receta "${currentRecipe.name}" ha sido actualizada.` });
     } else {
       const newRecipe: Recipe = {
         id: `r${Date.now()}`,
-        name: currentRecipe.name!,
-        producesProductId: currentRecipe.producesProductId!,
-        yieldQuantity: currentRecipe.yieldQuantity!,
-        yieldUnit: currentRecipe.yieldUnit!,
-        ingredients: currentRecipe.ingredients || [],
-        description: currentRecipe.description,
-        instructions: currentRecipe.instructions,
-        preparationTime: currentRecipe.preparationTime,
-        cookingTime: currentRecipe.cookingTime,
+        ...recipeToSave,
         aiHint: currentRecipe.aiHint || 'recipe book'
       };
       setRecipes([...recipes, newRecipe]);
@@ -124,23 +122,26 @@ export default function RecipesPage() {
     setCurrentRecipe(prev => prev ? { ...prev, [name]: value } : {});
   };
 
-  const handleIngredientChange = (index: number, field: keyof RecipeIngredient, value: string | number) => {
+  const handleIngredientChange = (tempId: string, field: keyof RecipeIngredient, value: string | number) => {
     setCurrentRecipe(prev => {
       if (!prev || !prev.ingredients) return prev;
-      const newIngredients = [...prev.ingredients];
-      if (field === 'itemId') {
-        const selectedItem = availableIngredients.find(item => item.id === value);
-        newIngredients[index] = {
-          ...newIngredients[index],
-          [field]: value as string,
-          name: selectedItem?.name || '',
-          // @ts-ignore // productType is on ManagedProduct, not RawMaterial
-          itemType: selectedItem?.productType ? 'product' : 'raw_material',
-          unit: selectedItem?.unit || ALL_UNITS[0] // Default unit from selected item
-        };
-      } else {
-         newIngredients[index] = { ...newIngredients[index], [field]: value };
-      }
+      const newIngredients = prev.ingredients.map(ing => {
+        if (ing.id === tempId) {
+          if (field === 'itemId') {
+            const selectedItem = availableIngredients.find(item => item.id === value);
+            return {
+              ...ing,
+              itemId: value as string,
+              name: selectedItem?.name || '',
+              // @ts-ignore 
+              itemType: selectedItem?.productType ? 'product' : 'raw_material',
+              unit: selectedItem?.unit || ALL_UNITS[0]
+            };
+          }
+          return { ...ing, [field]: value };
+        }
+        return ing;
+      });
       return { ...prev, ingredients: newIngredients };
     });
   };
@@ -148,20 +149,27 @@ export default function RecipesPage() {
   const addIngredient = () => {
     setCurrentRecipe(prev => {
       if (!prev) return prev;
-      const newIngredient: RecipeIngredient = { itemId: '', itemType: 'raw_material', name: '', quantity: 1, unit: ALL_UNITS[0] };
+      const newIngredient: RecipeIngredient = { id: `temp_id_${Date.now()}`, itemId: '', itemType: 'raw_material', name: '', quantity: 1, unit: ALL_UNITS[0] };
       return { ...prev, ingredients: [...(prev.ingredients || []), newIngredient] };
     });
   };
 
-  const removeIngredient = (index: number) => {
+  const removeIngredient = (tempId: string) => {
     setCurrentRecipe(prev => {
       if (!prev || !prev.ingredients) return prev;
-      const newIngredients = prev.ingredients.filter((_, i) => i !== index);
+      const newIngredients = prev.ingredients.filter((ing) => ing.id !== tempId);
       return { ...prev, ingredients: newIngredients };
     });
   };
   
   const getProductName = (productId: string) => mockProducts.find(p => p.id === productId)?.name || productId;
+
+  const filteredRecipes = useMemo(() => {
+    return recipes.filter(recipe =>
+      recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getProductName(recipe.producesProductId).toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [recipes, searchTerm]);
 
 
   return (
@@ -174,8 +182,18 @@ export default function RecipesPage() {
         <CardDescription>{UI_TEXT.MANAGE_RECIPES_DESCRIPTION}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 flex justify-end">
-          <Button onClick={() => handleOpenModal()} variant="default">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+           <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Buscar por nombre de receta o producto..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Button onClick={() => handleOpenModal()} variant="default" className="w-full sm:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" />
             {UI_TEXT.ADD_RECIPE}
           </Button>
@@ -192,7 +210,7 @@ export default function RecipesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recipes.map(recipe => (
+              {filteredRecipes.map(recipe => (
                 <TableRow key={recipe.id}>
                   <TableCell className="font-medium">{recipe.name}</TableCell>
                   <TableCell>{getProductName(recipe.producesProductId)}</TableCell>
@@ -211,8 +229,8 @@ export default function RecipesPage() {
             </TableBody>
           </Table>
         </div>
-        {recipes.length === 0 && (
-          <p className="text-center text-muted-foreground py-10">{UI_TEXT.NO_DATA}</p>
+        {filteredRecipes.length === 0 && (
+           <p className="text-center text-muted-foreground py-10">{searchTerm ? `No se encontraron recetas para "${searchTerm}".` : UI_TEXT.NO_DATA}</p>
         )}
       </CardContent>
 
@@ -272,15 +290,15 @@ export default function RecipesPage() {
                 <Button type="button" variant="outline" size="sm" onClick={addIngredient}><PackagePlus className="mr-2 h-4 w-4" /> {UI_TEXT.ADD_INGREDIENT}</Button>
               </div>
               {currentRecipe?.ingredients?.map((ing, index) => (
-                <Card key={index} className="p-3 bg-secondary/30">
+                <Card key={ing.id} className="p-3 bg-secondary/30">
                   <div className="grid grid-cols-12 gap-2 items-end">
                     <div className="col-span-5">
-                      <Label htmlFor={`ing-item-${index}`} className="text-xs">{UI_TEXT.ITEM_NAME}</Label>
+                      <Label htmlFor={`ing-item-${ing.id}`} className="text-xs">{UI_TEXT.ITEM_NAME}</Label>
                       <Select 
                         value={ing.itemId} 
-                        onValueChange={(value) => handleIngredientChange(index, 'itemId', value)}
+                        onValueChange={(value) => handleIngredientChange(ing.id!, 'itemId', value)}
                       >
-                        <SelectTrigger id={`ing-item-${index}`}>
+                        <SelectTrigger id={`ing-item-${ing.id}`}>
                           <SelectValue placeholder="Seleccionar..." />
                         </SelectTrigger>
                         <SelectContent>
@@ -291,16 +309,16 @@ export default function RecipesPage() {
                       </Select>
                     </div>
                      <div className="col-span-3">
-                      <Label htmlFor={`ing-qty-${index}`} className="text-xs">{UI_TEXT.QUANTITY}</Label>
-                      <Input id={`ing-qty-${index}`} type="number" value={ing.quantity} onChange={(e) => handleIngredientChange(index, 'quantity', parseFloat(e.target.value))} />
+                      <Label htmlFor={`ing-qty-${ing.id}`} className="text-xs">{UI_TEXT.QUANTITY}</Label>
+                      <Input id={`ing-qty-${ing.id}`} type="number" value={ing.quantity} onChange={(e) => handleIngredientChange(ing.id!, 'quantity', parseFloat(e.target.value))} />
                     </div>
                     <div className="col-span-3">
-                      <Label htmlFor={`ing-unit-${index}`} className="text-xs">{UI_TEXT.UNIT}</Label>
+                      <Label htmlFor={`ing-unit-${ing.id}`} className="text-xs">{UI_TEXT.UNIT}</Label>
                       <Select 
                         value={ing.unit}
-                        onValueChange={(value) => handleIngredientChange(index, 'unit', value)}
+                        onValueChange={(value) => handleIngredientChange(ing.id!, 'unit', value)}
                       >
-                        <SelectTrigger id={`ing-unit-${index}`}>
+                        <SelectTrigger id={`ing-unit-${ing.id}`}>
                           <SelectValue placeholder="Unidad" />
                         </SelectTrigger>
                         <SelectContent>
@@ -311,7 +329,7 @@ export default function RecipesPage() {
                       </Select>
                     </div>
                     <div className="col-span-1">
-                      <Button type="button" variant="ghost" size="icon" onClick={() => removeIngredient(index)} className="text-destructive hover:text-destructive/80 mt-auto">
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeIngredient(ing.id!)} className="text-destructive hover:text-destructive/80 mt-auto">
                         <PackageMinus className="h-4 w-4" />
                       </Button>
                     </div>
@@ -349,3 +367,4 @@ export default function RecipesPage() {
   );
 }
 
+    

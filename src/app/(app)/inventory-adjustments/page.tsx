@@ -1,6 +1,6 @@
 
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { UI_TEXT, ALL_UNITS, DOCUMENT_STATUS_OPTIONS, ADJUSTMENT_TYPE_OPTIONS } from '@/lib/constants';
 import type { InventoryAdjustment, InventoryAdjustmentItem, Branch, ManagedProduct, RawMaterial } from '@/types';
-import { Edit3, Trash2, PlusCircle, FileEdit, PackagePlus, PackageMinus, Calendar as CalendarIcon } from 'lucide-react';
+import { Edit3, Trash2, PlusCircle, FileEdit, PackagePlus, PackageMinus, Calendar as CalendarIcon, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -50,6 +50,7 @@ export default function InventoryAdjustmentsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentAdjustment, setCurrentAdjustment] = useState<Partial<InventoryAdjustment>>({});
   const [editingAdjustment, setEditingAdjustment] = useState<InventoryAdjustment | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
   const handleOpenModal = (adj?: InventoryAdjustment) => {
@@ -153,6 +154,15 @@ export default function InventoryAdjustmentsPage() {
     });
   };
 
+  const filteredAdjustments = useMemo(() => {
+    return adjustments.filter(adj =>
+      adj.documentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mockBranches.find(b => b.id === adj.branchId)?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (adj.reasonGeneral && adj.reasonGeneral.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (adj.status && DOCUMENT_STATUS_OPTIONS[adj.status.toUpperCase() as keyof typeof DOCUMENT_STATUS_OPTIONS]?.label.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [adjustments, searchTerm]);
+
   return (
     <Card className="shadow-xl">
       <CardHeader>
@@ -163,8 +173,18 @@ export default function InventoryAdjustmentsPage() {
         <CardDescription>{UI_TEXT.MANAGE_INVENTORY_ADJUSTMENTS_DESCRIPTION}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 flex justify-end">
-          <Button onClick={() => handleOpenModal()} variant="default">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Buscar por No., sucursal, motivo..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Button onClick={() => handleOpenModal()} variant="default" className="w-full sm:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" />
             {UI_TEXT.ADD_INVENTORY_ADJUSTMENT}
           </Button>
@@ -182,7 +202,7 @@ export default function InventoryAdjustmentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {adjustments.map(adj => (
+              {filteredAdjustments.map(adj => (
                 <TableRow key={adj.id}>
                   <TableCell className="font-medium">{adj.documentNumber}</TableCell>
                   <TableCell>{format(new Date(adj.adjustmentDate), "PPP", { locale: es })}</TableCell>
@@ -202,8 +222,8 @@ export default function InventoryAdjustmentsPage() {
             </TableBody>
           </Table>
         </div>
-        {adjustments.length === 0 && (
-          <p className="text-center text-muted-foreground py-10">{UI_TEXT.NO_DATA}</p>
+        {filteredAdjustments.length === 0 && (
+          <p className="text-center text-muted-foreground py-10">{searchTerm ? `No se encontraron ajustes para "${searchTerm}".` : UI_TEXT.NO_DATA}</p>
         )}
       </CardContent>
 
@@ -323,3 +343,5 @@ export default function InventoryAdjustmentsPage() {
     </Card>
   );
 }
+
+    

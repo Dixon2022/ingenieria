@@ -1,6 +1,6 @@
 
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { UI_TEXT, ALL_UNITS, DOCUMENT_STATUS_OPTIONS } from '@/lib/constants';
 import type { PurchaseOrder, PurchaseOrderItem, Supplier, Branch, RawMaterial, ManagedProduct } from '@/types';
-import { Edit3, Trash2, PlusCircle, ClipboardPlus, PackagePlus, PackageMinus, Calendar as CalendarIcon } from 'lucide-react';
+import { Edit3, Trash2, PlusCircle, ClipboardPlus, PackagePlus, PackageMinus, Calendar as CalendarIcon, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -44,10 +44,10 @@ const initialPurchaseOrders: PurchaseOrder[] = [
     orderDate: new Date().toISOString(), 
     expectedDeliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     items: [
-      { id: 'item1', itemId: 'rm1', itemType: 'raw_material', itemName: 'Harina de Trigo', quantity: 10, unit: UI_TEXT.UNITS.KG, unitPrice: 20 },
+      { id: 'item1', itemId: 'rm1', itemType: 'raw_material', itemName: 'Harina de Trigo', quantity: 10, unit: UI_TEXT.UNITS.KG, unitPrice: 2000 },
     ],
     status: 'ordered',
-    totalAmount: 200,
+    totalAmount: 20000,
     aiHint: 'purchase order document'
   },
 ];
@@ -57,6 +57,7 @@ export default function PurchaseOrdersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<Partial<PurchaseOrder>>({});
   const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
   const calculateTotalAmount = (items: PurchaseOrderItem[] = []) => {
@@ -168,6 +169,13 @@ export default function PurchaseOrdersPage() {
     });
   };
 
+  const filteredOrders = useMemo(() => {
+    return purchaseOrders.filter(order =>
+      order.documentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (order.supplierName && order.supplierName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (order.status && DOCUMENT_STATUS_OPTIONS[order.status.toUpperCase() as keyof typeof DOCUMENT_STATUS_OPTIONS]?.label.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [purchaseOrders, searchTerm]);
 
   return (
     <Card className="shadow-xl">
@@ -179,8 +187,18 @@ export default function PurchaseOrdersPage() {
         <CardDescription>{UI_TEXT.MANAGE_PURCHASE_ORDERS_DESCRIPTION}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 flex justify-end">
-          <Button onClick={() => handleOpenModal()} variant="default">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Buscar por No., proveedor, estado..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Button onClick={() => handleOpenModal()} variant="default" className="w-full sm:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" />
             {UI_TEXT.ADD_PURCHASE_ORDER}
           </Button>
@@ -198,12 +216,12 @@ export default function PurchaseOrdersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {purchaseOrders.map(order => (
+              {filteredOrders.map(order => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.documentNumber}</TableCell>
                   <TableCell>{order.supplierName || order.supplierId}</TableCell>
                   <TableCell>{format(new Date(order.orderDate), "PPP", { locale: es })}</TableCell>
-                  <TableCell className="text-right">${order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
+                  <TableCell className="text-right">₡{order.totalAmount?.toFixed(0) || '0'}</TableCell>
                   <TableCell>{DOCUMENT_STATUS_OPTIONS[order.status.toUpperCase() as keyof typeof DOCUMENT_STATUS_OPTIONS]?.label || order.status}</TableCell>
                   <TableCell className="text-center">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(order)} className="text-primary hover:text-primary/80">
@@ -218,13 +236,13 @@ export default function PurchaseOrdersPage() {
             </TableBody>
           </Table>
         </div>
-        {purchaseOrders.length === 0 && (
-          <p className="text-center text-muted-foreground py-10">{UI_TEXT.NO_DATA}</p>
+        {filteredOrders.length === 0 && (
+          <p className="text-center text-muted-foreground py-10">{searchTerm ? `No se encontraron órdenes para "${searchTerm}".` : UI_TEXT.NO_DATA}</p>
         )}
       </CardContent>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh]">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>{editingOrder ? UI_TEXT.EDIT_PURCHASE_ORDER : UI_TEXT.ADD_PURCHASE_ORDER}</DialogTitle>
           </DialogHeader>
@@ -326,7 +344,7 @@ export default function PurchaseOrdersPage() {
                       </div>
                        <div className="col-span-3">
                         <Label className="text-xs">Total</Label>
-                        <Input type="text" value={`$${(item.quantity * item.unitPrice).toFixed(2)}`} readOnly disabled className="bg-muted/50"/>
+                        <Input type="text" value={`₡${(item.quantity * item.unitPrice).toFixed(0)}`} readOnly disabled className="bg-muted/50"/>
                       </div>
                       <div className="col-span-1">
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(index)} className="text-destructive hover:text-destructive/80">
@@ -340,7 +358,7 @@ export default function PurchaseOrdersPage() {
               </div>
               <div className="mt-4 text-right">
                 <Label className="text-lg font-semibold">{UI_TEXT.TOTAL_AMOUNT}: </Label>
-                <span className="text-xl font-bold text-primary">${calculateTotalAmount(currentOrder?.items).toFixed(2)}</span>
+                <span className="text-xl font-bold text-primary">₡{calculateTotalAmount(currentOrder?.items).toFixed(0)}</span>
               </div>
               <div>
                 <Label htmlFor="notes">{UI_TEXT.NOTES}</Label>
@@ -358,3 +376,4 @@ export default function PurchaseOrdersPage() {
   );
 }
 
+    

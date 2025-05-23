@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UI_TEXT } from '@/lib/constants';
 import type { InventoryItem } from '@/types';
-import { Edit3, PackageCheck, PackageWarning, Save, Trash2, PlusCircle } from 'lucide-react';
+import { Edit3, PackageCheck, AlertTriangle, Save, Trash2, PlusCircle } from 'lucide-react';
 import Image from 'next/image';
 import {
   AlertDialog,
@@ -87,7 +87,7 @@ export default function InventoryPage() {
                   <TableCell className="font-medium">
                     {item.name}
                     {item.stock < item.minStockLevel && (
-                      <PackageWarning className="inline-block ml-2 h-4 w-4 text-destructive" />
+                      <AlertTriangle className="inline-block ml-2 h-4 w-4 text-destructive" />
                     )}
                   </TableCell>
                   <TableCell className="text-right">

@@ -35,7 +35,7 @@ export const UI_TEXT = {
   RAW_MATERIALS_TITLE: "Materia Prima",
   RECIPES_TITLE: "Recetas",
   SUPPLIERS_TITLE: "Proveedores",
-  REPORTS_TITLE: "Reportes de Ventas",
+  REPORTS_TITLE: "Reportes de Ventas y Análisis IA", // Changed
   BRANCHES_TITLE: "Sucursales",
   USERS_TITLE: "Usuarios",
   LOADING: "Cargando...",
@@ -63,15 +63,15 @@ export const UI_TEXT = {
     {"item": "Bolillo", "stock": 10}
   ]
 }`, 
-  ANALYZE_SALES: "Analizar Ventas",
+  ANALYZE_SALES: "Analizar Ventas con IA", // Changed
   ANALYSIS_RESULTS: "Resultados del Análisis",
   ITEMS_TO_ADJUST: "Artículos para Ajustar Inventario",
-  REASONING: "Justificación",
+  REASONING: "Justificación del Análisis", // Changed
   NO_DATA: "No hay datos para mostrar.",
   NO_ITEMS_IN_CART: "El carrito está vacío.",
   TRANSACTION_SUCCESS: "Transacción completada.",
   ERROR_LOGIN_FAILED: "Usuario o contraseña incorrectos.",
-  ERROR_ANALYSIS: "Error al analizar los datos.",
+  ERROR_ANALYSIS: "Error al procesar el análisis de ventas.", // Changed
   PRODUCT_CATEGORIES: {
     PAN_DULCE: "Pan Dulce",
     PAN_SALADO: "Pan Salado",
@@ -100,17 +100,18 @@ export const UI_TEXT = {
     PAQUETE: "paquete",
   },
   VIEW_DETAILS: "Ver detalles",
-  INVENTORY_ADVICE: "Consejos de Inventario por IA",
-  SALES_REPORT_DESCRIPTION: "Seleccione filtros para generar un análisis de ventas y recomendaciones de inventario.", 
-  REPORTS_FILTER_TITLE: "Filtros para el Reporte",
-  START_DATE: "Fecha de Inicio",
-  END_DATE: "Fecha de Fin",
-  SELECT_BRANCH: "Seleccionar Sucursal",
-  ALL_BRANCHES: "Todas las Sucursales",
-  GENERATE_REPORT: "Generar Reporte",
-  NO_ITEMS_TO_ADJUST_SUGGESTED: "No se sugieren ajustes de inventario para los filtros seleccionados.",
+  INVENTORY_ADVICE: "Consejos de Inventario generados por Inteligencia Artificial.", // Changed
+  SALES_REPORT_DESCRIPTION: "Ingrese los datos de ventas en formato JSON para obtener un análisis y recomendaciones de inventario impulsadas por IA.", // Changed
+  REPORTS_FILTER_TITLE: "Filtros para el Reporte", // Kept for potential future use, but not active now
+  START_DATE: "Fecha de Inicio", // Kept
+  END_DATE: "Fecha de Fin", // Kept
+  SELECT_BRANCH: "Seleccionar Sucursal", // Kept
+  ALL_BRANCHES: "Todas las Sucursales", // Kept
+  GENERATE_REPORT: "Generar Reporte", // Kept
+  NO_ITEMS_TO_ADJUST_SUGGESTED: "Según el análisis, no se sugieren ajustes de inventario con los datos proporcionados.", // Changed
   ANALYSIS_DATA_UNAVAILABLE: "Información del análisis no disponible o incompleta.",
-  NO_REASONING_PROVIDED: "Justificación no proporcionada por el análisis.",
+  NO_REASONING_PROVIDED: "Justificación no proporcionada por el análisis o no aplicable.", // Changed
+  DOWNLOAD_ANALYSIS_BUTTON: "Descargar Análisis", // New
   
   ADD_BRANCH: "Agregar Sucursal",
   EDIT_BRANCH: "Editar Sucursal",
@@ -318,6 +319,7 @@ export const mockRecipesForPOS: Pick<import('@/types').Recipe, 'id' | 'name' | '
 ];
 
 // Mock Sales Orders for report generation (can be combined with POS generated ones)
+// Note: These are not directly used by the reverted JSON input report page, but kept for other potential uses.
 export const mockSalesOrdersForReports: import('@/types').SalesOrder[] = [
  { 
     id: 'so1', 
@@ -329,7 +331,7 @@ export const mockSalesOrdersForReports: import('@/types').SalesOrder[] = [
       { id: 'item2_so1', productId: 'p2', productName: 'Bolillo', quantity: 20, unitPrice: 500 },
     ],
     status: 'completed',
-    totalAmount: 25000, // 10*1500 + 20*500 = 15000 + 10000
+    totalAmount: 25000, 
     customerName: 'Cliente Ejemplo Uno',
     paymentMethod: 'Efectivo',
     aiHint: 'sales receipt document'
@@ -344,7 +346,7 @@ export const mockSalesOrdersForReports: import('@/types').SalesOrder[] = [
       { id: 'item2_so2', productId: 'p3', productName: 'Oreja', quantity: 12, unitPrice: 1800 },
     ],
     status: 'completed',
-    totalAmount: 29100, // 5*1500 + 12*1800 = 7500 + 21600
+    totalAmount: 29100, 
     customerName: 'Cliente Ejemplo Dos',
     paymentMethod: 'Tarjeta',
     aiHint: 'sales receipt document'

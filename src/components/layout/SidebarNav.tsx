@@ -1,14 +1,17 @@
+
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter } from "@/components/ui/sidebar";
 import { APP_NAME, BAKERY_NAME, ROUTES, UI_TEXT } from "@/lib/constants";
-import { Home, ShoppingCart, Package, BarChart3, Utensils } from "lucide-react";
+import { Home, ShoppingCart, Package, BarChart3, Utensils, Briefcase, Users } from "lucide-react";
 
 const navItems = [
   { href: ROUTES.POS, label: UI_TEXT.POS_TITLE, icon: ShoppingCart },
   { href: ROUTES.INVENTORY, label: UI_TEXT.INVENTORY_TITLE, icon: Package },
   { href: ROUTES.REPORTS, label: UI_TEXT.REPORTS_TITLE, icon: BarChart3 },
+  { href: ROUTES.BRANCHES, label: UI_TEXT.BRANCHES_TITLE, icon: Briefcase },
+  { href: ROUTES.USERS, label: UI_TEXT.USERS_TITLE, icon: Users },
 ];
 
 export default function SidebarNav() {

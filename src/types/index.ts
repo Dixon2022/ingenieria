@@ -27,3 +27,23 @@ export interface SalesDataInput {
   ventas: { item: string; cantidadVendida: number }[];
   inventarioActual?: { item: string; stock: number }[]; // Optional based on prompt
 }
+
+export interface Branch {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  aiHint?: string; // For placeholder image search if needed
+}
+
+export interface ManagedUser {
+  id: string;
+  identification: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  isBlocked: boolean;
+  roles: string[]; // e.g., ['admin', 'cashier']
+  avatarUrl?: string;
+  aiHint?: string; // For placeholder image search if needed
+}

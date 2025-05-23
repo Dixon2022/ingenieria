@@ -53,7 +53,7 @@ export const UI_TEXT = {
   ACTIONS: "Acciones",
   UPDATE_STOCK: "Actualizar",
   MIN_STOCK: "Stock Mínimo",
-  SALES_DATA_LABEL: "Datos de Ventas (JSON)",
+  SALES_DATA_LABEL: "Datos de Ventas (JSON)", // Kept for reference, but page will change
   SALES_DATA_PLACEHOLDER: `{
   "ventas": [
     {"item": "Concha de Vainilla", "cantidadVendida": 50},
@@ -63,7 +63,7 @@ export const UI_TEXT = {
     {"item": "Concha de Vainilla", "stock": 20},
     {"item": "Bolillo", "stock": 10}
   ]
-}`,
+}`, // Kept for reference
   ANALYZE_SALES: "Analizar Ventas",
   ANALYSIS_RESULTS: "Resultados del Análisis",
   ITEMS_TO_ADJUST: "Artículos para Ajustar Inventario",
@@ -102,7 +102,13 @@ export const UI_TEXT = {
   },
   VIEW_DETAILS: "Ver detalles",
   INVENTORY_ADVICE: "Consejos de Inventario por IA",
-  SALES_REPORT_DESCRIPTION: "Ingrese los datos de ventas en formato JSON para obtener un análisis y recomendaciones de inventario.",
+  SALES_REPORT_DESCRIPTION: "Seleccione filtros para generar un análisis de ventas y recomendaciones de inventario.", // Updated
+  REPORTS_FILTER_TITLE: "Filtros para el Reporte",
+  START_DATE: "Fecha de Inicio",
+  END_DATE: "Fecha de Fin",
+  SELECT_BRANCH: "Seleccionar Sucursal",
+  ALL_BRANCHES: "Todas las Sucursales",
+  GENERATE_REPORT: "Generar Reporte",
   
   ADD_BRANCH: "Agregar Sucursal",
   EDIT_BRANCH: "Editar Sucursal",
@@ -159,8 +165,8 @@ export const UI_TEXT = {
   
   ADD_RECIPE: "Crear Receta",
   EDIT_RECIPE: "Editar Receta",
-  VIEW_RECIPE: "Ver Receta", // Added
-  RECIPE_DETAILS: "Detalles de la Receta", // Added
+  VIEW_RECIPE: "Ver Receta", 
+  RECIPE_DETAILS: "Detalles de la Receta", 
   RECIPE_NAME: "Nombre de la Receta",
   PRODUCES_PRODUCT: "Producto Elaborado",
   YIELD_QUANTITY: "Cantidad Producida",
@@ -199,10 +205,10 @@ export const UI_TEXT = {
 
 
   SALES_ORDERS_TITLE: "Documentos de Venta",
-  MANAGE_SALES_ORDERS_DESCRIPTION: "Consulte documentos de venta (boletas/facturas).", // Updated
-  ADD_SALES_ORDER: "Nuevo Documento de Venta", // Will be removed from SalesOrderPage but keep for POS
+  MANAGE_SALES_ORDERS_DESCRIPTION: "Consulte documentos de venta (boletas/facturas).", 
+  ADD_SALES_ORDER: "Nuevo Documento de Venta", 
   EDIT_SALES_ORDER: "Editar Documento de Venta",
-  VIEW_SALES_ORDER: "Ver Documento de Venta", // Added
+  VIEW_SALES_ORDER: "Ver Documento de Venta", 
   CUSTOMER_NAME: "Nombre Cliente",
   PAYMENT_METHOD: "Método de Pago",
   CASH_REGISTER_OPEN_REQUIRED: "Requiere caja abierta (PDV)", 
@@ -276,7 +282,7 @@ export const mockBranches: Pick<import('@/types').Branch, 'id' | 'name'>[] = [
 ];
 
 // Mock Recipes for POS consumption
-export const mockRecipesForPOS: Pick<import('@/types').Recipe, 'id' | 'name' | 'producesProductId' | 'ingredients' | 'instructions'| 'yieldQuantity' | 'yieldUnit'>[] = [
+export const mockRecipesForPOS: Pick<import('@/types').Recipe, 'id' | 'name' | 'producesProductId' | 'ingredients' | 'instructions'| 'yieldQuantity' | 'yieldUnit' | 'preparationTime' | 'cookingTime'>[] = [
  { 
     id: 'r1', 
     name: 'Receta de Concha de Vainilla (Estándar)', 
@@ -289,6 +295,8 @@ export const mockRecipesForPOS: Pick<import('@/types').Recipe, 'id' | 'name' | '
       { id: 'ing_temp_3', itemId: 'rm_egg', itemType: 'raw_material', name: 'Huevo Fresco', quantity: 2, unit: UI_TEXT.UNITS.UNIDADES },
     ],
     instructions: "1. Mezclar ingredientes secos.\n2. Agregar líquidos y amasar.\n3. Formar y hornear.",
+    preparationTime: 30,
+    cookingTime: 20,
   },
    { 
     id: 'r_empanada', 
@@ -302,5 +310,54 @@ export const mockRecipesForPOS: Pick<import('@/types').Recipe, 'id' | 'name' | '
       { id: 'ing_emp_3', itemId: 'rm_pina', itemType: 'raw_material', name: 'Relleno de Piña', quantity: 0.3, unit: UI_TEXT.UNITS.KG },
     ],
     instructions: "1. Preparar masa.\n2. Rellenar y sellar.\n3. Hornear hasta dorar.",
+    preparationTime: 25,
+    cookingTime: 22,
   },
 ];
+
+// Mock Sales Orders for report generation (can be combined with POS generated ones)
+export const mockSalesOrdersForReports: import('@/types').SalesOrder[] = [
+ { 
+    id: 'so1', 
+    documentNumber: 'SO-2024-001', 
+    branchId: 'b1', 
+    orderDate: new Date(2024, 6, 15).toISOString(), // July 15, 2024
+    items: [
+      { id: 'item1_so1', productId: 'p1', productName: 'Concha de Vainilla', quantity: 10, unitPrice: 1500 },
+      { id: 'item2_so1', productId: 'p2', productName: 'Bolillo', quantity: 20, unitPrice: 500 },
+    ],
+    status: 'completed',
+    totalAmount: 25000, // 10*1500 + 20*500 = 15000 + 10000
+    customerName: 'Cliente Ejemplo Uno',
+    aiHint: 'sales receipt document'
+  },
+  { 
+    id: 'so2', 
+    documentNumber: 'SO-2024-002', 
+    branchId: 'b2', 
+    orderDate: new Date(2024, 6, 16).toISOString(), // July 16, 2024
+    items: [
+      { id: 'item1_so2', productId: 'p1', productName: 'Concha de Vainilla', quantity: 5, unitPrice: 1500 },
+      { id: 'item2_so2', productId: 'p3', productName: 'Oreja', quantity: 12, unitPrice: 1800 },
+    ],
+    status: 'completed',
+    totalAmount: 29100, // 5*1500 + 12*1800 = 7500 + 21600
+    customerName: 'Cliente Ejemplo Dos',
+    aiHint: 'sales receipt document'
+  },
+    { 
+    id: 'so3', 
+    documentNumber: 'SO-2024-003', 
+    branchId: 'b1', 
+    orderDate: new Date(2024, 6, 20).toISOString(), // July 20, 2024
+    items: [
+      { id: 'item1_so3', productId: 'p4', productName: 'Empanada de Piña', quantity: 15, unitPrice: 2000 },
+    ],
+    status: 'completed',
+    totalAmount: 30000,
+    customerName: 'Cliente Ejemplo Tres',
+    aiHint: 'sales receipt document'
+  },
+];
+
+    

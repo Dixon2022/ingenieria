@@ -1,5 +1,5 @@
 
-export const APP_NAME = "AmorPOS";
+export const APP_NAME = "Panadería Amores"; // Changed from AmorPOS
 export const BAKERY_NAME = "Panadería Amores";
 
 export const ROUTES = {
@@ -35,7 +35,7 @@ export const UI_TEXT = {
   RAW_MATERIALS_TITLE: "Materia Prima",
   RECIPES_TITLE: "Recetas",
   SUPPLIERS_TITLE: "Proveedores",
-  REPORTS_TITLE: "Reportes de Ventas y Análisis IA", // Changed
+  REPORTS_TITLE: "Análisis de Ventas IA",
   BRANCHES_TITLE: "Sucursales",
   USERS_TITLE: "Usuarios",
   LOADING: "Cargando...",
@@ -63,15 +63,15 @@ export const UI_TEXT = {
     {"item": "Bolillo", "stock": 10}
   ]
 }`, 
-  ANALYZE_SALES: "Analizar Ventas con IA", // Changed
+  ANALYZE_SALES: "Analizar Ventas con IA",
   ANALYSIS_RESULTS: "Resultados del Análisis",
   ITEMS_TO_ADJUST: "Artículos para Ajustar Inventario",
-  REASONING: "Justificación del Análisis", // Changed
+  REASONING: "Justificación del Análisis (en Español)",
   NO_DATA: "No hay datos para mostrar.",
   NO_ITEMS_IN_CART: "El carrito está vacío.",
   TRANSACTION_SUCCESS: "Transacción completada.",
   ERROR_LOGIN_FAILED: "Usuario o contraseña incorrectos.",
-  ERROR_ANALYSIS: "Error al procesar el análisis de ventas.", // Changed
+  ERROR_ANALYSIS: "Error al procesar el análisis de ventas.",
   PRODUCT_CATEGORIES: {
     PAN_DULCE: "Pan Dulce",
     PAN_SALADO: "Pan Salado",
@@ -100,18 +100,18 @@ export const UI_TEXT = {
     PAQUETE: "paquete",
   },
   VIEW_DETAILS: "Ver detalles",
-  INVENTORY_ADVICE: "Consejos de Inventario generados por Inteligencia Artificial.", // Changed
-  SALES_REPORT_DESCRIPTION: "Ingrese los datos de ventas en formato JSON para obtener un análisis y recomendaciones de inventario impulsadas por IA.", // Changed
-  REPORTS_FILTER_TITLE: "Filtros para el Reporte", // Kept for potential future use, but not active now
-  START_DATE: "Fecha de Inicio", // Kept
-  END_DATE: "Fecha de Fin", // Kept
-  SELECT_BRANCH: "Seleccionar Sucursal", // Kept
-  ALL_BRANCHES: "Todas las Sucursales", // Kept
-  GENERATE_REPORT: "Generar Reporte", // Kept
-  NO_ITEMS_TO_ADJUST_SUGGESTED: "Según el análisis, no se sugieren ajustes de inventario con los datos proporcionados.", // Changed
+  INVENTORY_ADVICE: "Consejos de Inventario generados por Inteligencia Artificial.",
+  SALES_REPORT_DESCRIPTION: "Seleccione un rango de fechas y sucursal para analizar las ventas y obtener recomendaciones de inventario impulsadas por IA.",
+  REPORTS_FILTER_TITLE: "Filtros para el Análisis de Ventas",
+  START_DATE: "Fecha de Inicio",
+  END_DATE: "Fecha de Fin",
+  SELECT_BRANCH: "Seleccionar Sucursal",
+  ALL_BRANCHES: "Todas las Sucursales",
+  GENERATE_ANALYSIS: "Generar Análisis", // Changed from GENERATE_REPORT
+  NO_ITEMS_TO_ADJUST_SUGGESTED: "Según el análisis, no se sugieren ajustes de inventario con los datos proporcionados.",
   ANALYSIS_DATA_UNAVAILABLE: "Información del análisis no disponible o incompleta.",
-  NO_REASONING_PROVIDED: "Justificación no proporcionada por el análisis o no aplicable.", // Changed
-  DOWNLOAD_ANALYSIS_BUTTON: "Descargar Análisis", // New
+  NO_REASONING_PROVIDED: "Justificación no proporcionada por el análisis o no aplicable.",
+  DOWNLOAD_ANALYSIS_BUTTON: "Descargar Análisis",
   
   ADD_BRANCH: "Agregar Sucursal",
   EDIT_BRANCH: "Editar Sucursal",
@@ -319,7 +319,6 @@ export const mockRecipesForPOS: Pick<import('@/types').Recipe, 'id' | 'name' | '
 ];
 
 // Mock Sales Orders for report generation (can be combined with POS generated ones)
-// Note: These are not directly used by the reverted JSON input report page, but kept for other potential uses.
 export const mockSalesOrdersForReports: import('@/types').SalesOrder[] = [
  { 
     id: 'so1', 
@@ -363,6 +362,21 @@ export const mockSalesOrdersForReports: import('@/types').SalesOrder[] = [
     totalAmount: 30000,
     customerName: 'Cliente Ejemplo Tres',
     paymentMethod: 'SINPE',
+    aiHint: 'sales receipt document'
+  },
+   { 
+    id: 'so4', 
+    documentNumber: 'SO-2024-004', 
+    branchId: 'b1', 
+    orderDate: new Date().toISOString(), // Today
+    items: [
+      { id: 'item1_so4', productId: 'p1', productName: 'Concha de Vainilla', quantity: 25, unitPrice: 1500 },
+      { id: 'item2_so4', productId: 'p5', productName: 'Pastel de Chocolate (Rebanada)', quantity: 2, unitPrice: 4500 },
+    ],
+    status: 'confirmed', // Different status for testing
+    totalAmount: 46500, 
+    customerName: 'Cliente Frecuente',
+    paymentMethod: 'Efectivo',
     aiHint: 'sales receipt document'
   },
 ];

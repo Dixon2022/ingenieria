@@ -80,7 +80,7 @@ export default function SidebarNav() {
           <Utensils className="h-8 w-8 text-primary" />
           <div className="flex flex-col">
             <span className="text-lg font-semibold text-sidebar-foreground">{APP_NAME}</span>
-            <span className="text-xs text-sidebar-foreground/70 -mt-1">{BAKERY_NAME}</span>
+            {/* <span className="text-xs text-sidebar-foreground/70 -mt-1">{BAKERY_NAME}</span> */}
           </div>
         </Link>
       </SidebarHeader>

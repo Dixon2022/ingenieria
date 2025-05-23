@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { APP_NAME, BAKERY_NAME, UI_TEXT } from '@/lib/constants';
+import { APP_NAME, UI_TEXT } from '@/lib/constants';
 import { Loader2, Utensils, Building } from 'lucide-react'; // Utensils as a bakery icon, Building for branch
 
 // Mock branches for the select input
@@ -38,7 +38,7 @@ export default function LoginPage() {
             <Utensils size={32} />
           </div>
           <CardTitle className="text-3xl font-bold text-primary">{APP_NAME}</CardTitle>
-          <CardDescription className="text-muted-foreground">{BAKERY_NAME}</CardDescription>
+          <CardDescription className="text-muted-foreground">Sistema de Gestión</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">

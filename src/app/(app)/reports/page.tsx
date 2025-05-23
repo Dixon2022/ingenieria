@@ -1,18 +1,26 @@
 
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea'; // Import Textarea
-import { UI_TEXT } from '@/lib/constants';
+import { UI_TEXT, mockBranches, mockSalesOrdersForReports } from '@/lib/constants'; // Removed Textarea
 import { analyzeSalesReport, AnalyzeSalesReportOutput } from '@/ai/flows/sales-report-analyzer';
-import { AlertCircle, CheckCircle, Loader2, Lightbulb, Download } from 'lucide-react';
+import { SalesOrder } from '@/types';
+import { getSalesOrdersFromPOS } from '@/app/(app)/pos/page';
+import { AlertCircle, CheckCircle, Loader2, Lightbulb, Download, Calendar as CalendarDateIcon } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format, parseISO, isWithinInterval, isValid } from "date-fns";
+import { es } from "date-fns/locale";
 
 export default function ReportsPage() {
-  const [salesDataJsonInput, setSalesDataJsonInput] = useState<string>(UI_TEXT.SALES_DATA_PLACEHOLDER || '');
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [analysisResult, setAnalysisResult] = useState<AnalyzeSalesReportOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,24 +31,65 @@ export default function ReportsPage() {
     setError(null);
     setAnalysisResult(null);
 
-    if (!salesDataJsonInput.trim()) {
-      setError("Por favor, ingrese los datos de ventas en formato JSON.");
+    if (!startDate || !endDate) {
+      setError("Por favor, seleccione un rango de fechas.");
+      setIsLoading(false);
+      return;
+    }
+    if (startDate > endDate) {
+      setError("La fecha de inicio no puede ser posterior a la fecha de fin.");
       setIsLoading(false);
       return;
     }
 
     try {
-      // Validate if the input is valid JSON (optional, but good practice)
-      JSON.parse(salesDataJsonInput); 
-      const result = await analyzeSalesReport({ salesData: salesDataJsonInput });
+      // 1. Fetch or get sales orders
+      const posSales = getSalesOrdersFromPOS(); // Sales from current POS session
+      const allSalesOrders: SalesOrder[] = [...mockSalesOrdersForReports, ...posSales];
+      
+      // 2. Filter sales orders by date and branch
+      const filteredSales = allSalesOrders.filter(order => {
+        const orderDate = parseISO(order.orderDate);
+        if (!isValid(orderDate)) return false;
+
+        const isDateMatch = isWithinInterval(orderDate, { start: startDate, end: endDate });
+        const isBranchMatch = selectedBranch === "all" || order.branchId === selectedBranch;
+        // Consider only completed or confirmed sales for analysis
+        const isStatusMatch = order.status === 'completed' || order.status === 'confirmed';
+        
+        return isDateMatch && isBranchMatch && isStatusMatch;
+      });
+
+      if (filteredSales.length === 0) {
+        setError("No se encontraron ventas para los filtros seleccionados.");
+        setIsLoading(false);
+        return;
+      }
+
+      // 3. Aggregate sales data from filtered orders
+      const aggregatedSales: { [itemName: string]: number } = {};
+      filteredSales.forEach(order => {
+        order.items.forEach(item => {
+          aggregatedSales[item.productName] = (aggregatedSales[item.productName] || 0) + item.quantity;
+        });
+      });
+
+      const salesDataForAI = {
+        ventas: Object.entries(aggregatedSales).map(([item, cantidadVendida]) => ({
+          item,
+          cantidadVendida,
+        })),
+        // inventarioActual could be fetched here if needed, or omitted
+        // For now, we omit it to simplify, the AI prompt can handle this.
+      };
+      
+      const salesDataJson = JSON.stringify(salesDataForAI);
+
+      const result = await analyzeSalesReport({ salesData: salesDataJson });
       setAnalysisResult(result);
     } catch (err: any) {
       console.error(err);
-      if (err instanceof SyntaxError) {
-        setError("Error: El JSON ingresado no es válido. Por favor, revise el formato.");
-      } else {
-        setError(UI_TEXT.ERROR_ANALYSIS);
-      }
+      setError(UI_TEXT.ERROR_ANALYSIS + (err.message ? `: ${err.message}` : ''));
     } finally {
       setIsLoading(false);
     }
@@ -54,7 +103,7 @@ export default function ReportsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "analisis_ventas.json";
+    link.download = "analisis_ventas_filtrado.json";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -73,24 +122,63 @@ export default function ReportsPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="salesData">{UI_TEXT.SALES_DATA_LABEL}</Label>
-              <Textarea
-                id="salesData"
-                value={salesDataJsonInput}
-                onChange={(e) => setSalesDataJsonInput(e.target.value)}
-                placeholder={UI_TEXT.SALES_DATA_PLACEHOLDER}
-                rows={10}
-                className="mt-1"
-              />
-            </div>
+            <Card className="p-4 bg-secondary/30">
+              <CardHeader className="p-2">
+                <CardTitle className="text-lg">{UI_TEXT.REPORTS_FILTER_TITLE}</CardTitle>
+              </CardHeader>
+              <CardContent className="p-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="startDate">{UI_TEXT.START_DATE}</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button id="startDate" variant={"outline"} className="w-full justify-start text-left font-normal">
+                        <CalendarDateIcon className="mr-2 h-4 w-4" />
+                        {startDate ? format(startDate, "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <Label htmlFor="endDate">{UI_TEXT.END_DATE}</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button id="endDate" variant={"outline"} className="w-full justify-start text-left font-normal">
+                        <CalendarDateIcon className="mr-2 h-4 w-4" />
+                        {endDate ? format(endDate, "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <Label htmlFor="branch">{UI_TEXT.SELECT_BRANCH}</Label>
+                  <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+                    <SelectTrigger id="branch">
+                      <SelectValue placeholder={UI_TEXT.SELECT_BRANCH} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{UI_TEXT.ALL_BRANCHES}</SelectItem>
+                      {mockBranches.map(branch => (
+                        <SelectItem key={branch.id} value={branch.id}>{branch.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+            
             <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Lightbulb className="mr-2 h-4 w-4" />
               )}
-              {UI_TEXT.ANALYZE_SALES}
+              {UI_TEXT.GENERATE_ANALYSIS}
             </Button>
           </form>
         </CardContent>

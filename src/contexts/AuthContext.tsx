@@ -1,3 +1,4 @@
+
 "use client";
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useState, useEffect } from 'react';
@@ -16,7 +17,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_STORAGE_KEY = 'amorpos_auth';
+const AUTH_STORAGE_KEY = 'panaderia_amores_auth'; // Changed from amorpos_auth
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
